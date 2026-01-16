@@ -1,0 +1,1 @@
+# Serve para fazer os imports relativos funcionarem entre pastas
