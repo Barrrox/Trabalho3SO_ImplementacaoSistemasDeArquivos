@@ -5,7 +5,7 @@ class FAT_table_manager:
         # aloca os clusters dos arquivos na tabela
         return
     
-    def desalocar_arquivo():
+    def desalocar_arquivo(primeiro_cluster):
         # desaloca os clusters de um arquivo alocado na tabela
         return
 
@@ -17,6 +17,6 @@ class FAT_table_manager:
         # Encontra o proximo cluster de uma chain     
         return
 
-    def sincronizar_fat():
+    def sincronizar_fat(primeiro_cluster):
         # Sincroniza as tabelas FAT
         return

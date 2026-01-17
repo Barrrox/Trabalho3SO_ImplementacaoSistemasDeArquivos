@@ -98,9 +98,9 @@ class FileSystemManager:
         # entrada = [atributo, nome, extensao, tamanho, dono, nivel_de_acesso, primeiro_cluster]
         primeiro_cluster = entrada[6]
 
-        self.fat_manager.desalocar_arquivo()
-        self.root_manager.desalocar_entrada()
-        self.fat_manager.sincronizar_fat()
+        self.fat_manager.desalocar_arquivo(primeiro_cluster)
+        self.root_manager.desalocar_entrada(arquivo)
+        self.fat_manager.sincronizar_fat(primeiro_cluster)
 
         resultado = [f"arquivo {arquivo} excluido"]
 
