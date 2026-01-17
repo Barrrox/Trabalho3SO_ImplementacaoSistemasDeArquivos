@@ -15,11 +15,10 @@ class get_num_entradas_raiz
 ```
 
 #### Testes feitos
-
+test_formatador.py
 
 #### Testes faltantes
 ```python
-test_boot_record.py
 ```
 
 ---------------------------------------------------------------------------------------------

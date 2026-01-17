@@ -1,6 +1,6 @@
 # IMPORTANTE!!!
 
-Aqui escrevo sobre como executar os arquivos desse repositorio da maneira correta para fazer os imports funcionarem. Vou primeiro mostrar como executávamos python antes e como devemos agora, e depois explicar o porquê disso caso queira ler.
+Aqui escrevo sobre como executar os arquivos desse repositorio da maneira correta para fazer os imports funcionarem, que envolve o uso dos arquivos **__init__.py**. Vou primeiro mostrar como executávamos python antes e como devemos agora, e depois explicar o porquê disso caso queira ler.
 
 Antes nós executaríamos assim:
 
