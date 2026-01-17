@@ -5,7 +5,11 @@ class FAT_table_manager:
         # aloca os clusters dos arquivos na tabela
         return
     
-      
+    def desalocar_arquivo():
+        # desaloca os clusters de um arquivo alocado na tabela
+        
+        return
+
     def procurar_entrada_livre():
         # procura um cluster livre
         return
