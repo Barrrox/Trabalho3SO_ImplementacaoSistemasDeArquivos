@@ -2,23 +2,27 @@
 
 ## Arquivos de classes
 ---------------------------------------------------------------------------------------------
-### boot_record
+### file_system_manager
 #### Classes feitas
 ```python
-class get_bytes_por_setor
-class get_setores_por_tabela
-class get_setores_por_cluster
-class get_num_entradas_raiz
+def get_bytes_por_setor
+def get_setores_por_tabela
+def get_setores_por_cluster
+def get_num_entradas_raiz
+def ler_input_interface
 ```
 #### Classes faltantes
 ```python
 ```
 
 #### Testes feitos
-test_formatador.py
+```python
+ler_input_interface.py
+```
 
 #### Testes faltantes
 ```python
+test_fileSystemManager.py
 ```
 
 ---------------------------------------------------------------------------------------------
@@ -97,11 +101,12 @@ Nenhuma
 ### Testes feitos
 ```python
 teste_formatador
+test_escrever_boot_record
 ```
 
 ### Testes faltantes
 ```python
-teste_boot_record
+
 ```
 
 

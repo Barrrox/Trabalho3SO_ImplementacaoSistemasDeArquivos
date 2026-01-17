@@ -5,7 +5,7 @@ class FAT_table_manager:
         # aloca os clusters dos arquivos na tabela
         return
     
-
+      
     def procurar_entrada_livre():
         # procura um cluster livre
         return
@@ -14,6 +14,7 @@ class FAT_table_manager:
 
     def pegar_proximo_cluster():
         # Encontra o proximo cluster de uma chain
+        
         return
 
 

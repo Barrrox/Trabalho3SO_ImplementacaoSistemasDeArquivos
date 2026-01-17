@@ -13,8 +13,9 @@ class TesteSystemFileManager(unittest.TestCase):
         return 
     
     # ler_input_interface
-    def test_comando_inexistente(self):
+    def test_ler_input_interface(self):
 
+        # 1. Comando Inexistente
         comandos_teste = [
             "comando_inexistente",
         ]
@@ -28,8 +29,7 @@ class TesteSystemFileManager(unittest.TestCase):
             # self.assertEqual(retorno_esperado, retorno_real)
             self.assertEqual(retorno_esperado, retorno_real)
 
-    # ler_input_interface
-    def test_comando_invalido(self):
+        # 2. Comando invalido
 
         comandos_teste = [
             "",
@@ -46,8 +46,7 @@ class TesteSystemFileManager(unittest.TestCase):
             # self.assertEqual(retorno_esperado, retorno_real)
             self.assertEqual(retorno_esperado, retorno_real)
 
-    # ler_input_interface
-    def test_comando_valido(self):
+        # 3. Comando válido - Função Exemplo
 
         comando_teste = "exemplo katchau magrao123"
         retorno_esperado = "Comando de exemplo! você escreveu 'exemplo' seguido de ('katchau', 'magrao123')."

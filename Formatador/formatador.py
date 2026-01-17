@@ -5,7 +5,7 @@
     # Escrever o boot record
 
 
-class formatador:
+class Formatador:
 
     # tamanho partição em bytes
     def zerar(caminho_particao, tamanho_particao):
@@ -15,10 +15,8 @@ class formatador:
 
         return 
 
-
     # recebe os parametros em valor numérico, faz a tradução para binário (little-endian) na hora da escrita
     def escreve_boot_record(self, arquivo, bytes_por_setor, setores_por_tabela, setores_por_cluster, num_entradas_raiz ):
-
 
         # escreve os parâmetros do boot record
         with open(arquivo, 'wb') as f:
