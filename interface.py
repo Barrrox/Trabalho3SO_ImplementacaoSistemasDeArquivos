@@ -1,4 +1,4 @@
-from Formatador.formatador import formatador
+from Classes.file_system_manager import FileSystemManager
 
 class interface:
     # cria objeto file_system_manager para ser usado na interface

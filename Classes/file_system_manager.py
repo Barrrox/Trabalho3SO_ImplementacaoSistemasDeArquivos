@@ -83,6 +83,7 @@ class FileSystemManager:
 
         return f"Comando de exemplo! você escreveu 'exemplo' seguido de {args}."
 #*******************************************************************************************************#   
+    # comando_deletar_arqv nome_arqv
     def comando_deletar_arqv(self, *args):
         arquivo = args[2].lower()
         erro = ["Erro: arquivo não encontrado"]

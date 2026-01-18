@@ -11,3 +11,7 @@ class root_dir_manager:
     def desalocar_entrada(arquivo): 
         # aloca atributo como 0x01 (oculto ou excluido)
         return
+    
+    def listar_entradas():
+        #listar todos os arquivos presentes no diretório
+        return
