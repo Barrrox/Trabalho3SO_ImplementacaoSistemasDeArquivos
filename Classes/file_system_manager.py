@@ -92,12 +92,25 @@ class FileSystemManager:
             return {"rodou?": False, "comando" : "exemplo2", "dados" : None, "msg_erro": "Não digitou 1"}
 
 #*******************************************************************************************************#   
+    # comando_deletar_arqv nome_arqv
     def comando_deletar_arqv(self, *args):
         arquivo = args[2].lower()
-        
+        erro = ["Erro: arquivo não encontrado"]
+
         if not arquivo:
-            erro = ["Erro: arquivo não encontrado"]
             return erro
+        
+        entrada = self.root_manager.ler_entrada(arquivo) # procura entrada do arquivo
+
+        if not entrada:
+            return erro
+
+        # entrada = [atributo, nome, extensao, tamanho, dono, nivel_de_acesso, primeiro_cluster]
+        primeiro_cluster = entrada[6]
+
+        self.fat_manager.desalocar_arquivo(primeiro_cluster)
+        self.root_manager.desalocar_entrada(arquivo)
+        self.fat_manager.sincronizar_fat(primeiro_cluster)
 
         resultado = [f"arquivo {arquivo} excluido"]
 
