@@ -1,7 +1,7 @@
-from FAT_table_manager import FAT_table_manager
-from disk_manager import disk_manager
-from root_dir_manager import root_dir_manager
-from data_manager import data_manager
+from Classes.FAT_table_manager import FAT_table_manager
+from Classes.disk_manager import disk_manager
+from Classes.root_dir_manager import root_dir_manager
+from Classes.data_manager import data_manager
 
 class FileSystemManager:
     
@@ -82,6 +82,15 @@ class FileSystemManager:
     def comando_exemplo(self, *args):
 
         return f"Comando de exemplo! você escreveu 'exemplo' seguido de {args}."
+#*******************************************************************************************************#
+    # Exemplo de comando usando retorno com dicionarios
+    def comando_exemplo2(self, argumento_teste):
+
+        if argumento_teste == 1:
+            return {"rodou?": True, "comando" : "exemplo2", "dados" : 1, "msg_erro": None}
+        else:
+            return {"rodou?": False, "comando" : "exemplo2", "dados" : None, "msg_erro": "Não digitou 1"}
+
 #*******************************************************************************************************#   
     def comando_deletar_arqv(self, *args):
         arquivo = args[2].lower()
