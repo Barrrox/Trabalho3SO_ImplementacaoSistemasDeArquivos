@@ -94,8 +94,8 @@ class FileSystemManager:
             return {"rodou?": False, "comando" : "exemplo2", "dados" : None, "msg_erro": "Não digitou 1"}
 
 #*******************************************************************************************************#   
-    # comando_deletar_arqv nome_arqv
-    def comando_deletar_arqv(self, *args):
+    # deletar nome_arqv
+    def comando_deletar(self, *args):
         arquivo = args[0].lower()
         erro = ["[sys] - Arquivo não encontrado"]
 
