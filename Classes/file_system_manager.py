@@ -95,7 +95,7 @@ class FileSystemManager:
     # comando_deletar_arqv nome_arqv
     def comando_deletar_arqv(self, *args):
         arquivo = args[2].lower()
-        erro = ["Erro: arquivo não encontrado"]
+        erro = ["[sys] - Arquivo não encontrado"]
 
         if not arquivo:
             return erro
@@ -132,11 +132,37 @@ class FileSystemManager:
         return bootrecord
 #*******************************************************************************************************#
     
-    def comando_copiar(self): # copia os elementos
+    def comando_copiar(self, *args): # copia os elementos
+        # comando_copiar diretorio1 diretorio2
+        origem = args[1].lower()
+        destino = args[2].lower()
+
+        if not origem or not destino:
+            erro = ["[sys] - É necessário informar a origem e o destino do arquivo"]
+            return erro
+        
+        entrada_origem = self.root_manager.ler_entrada()
+        if not entrada_origem:
+            erro = ["[sys] - Arquivo não encontrado"]
+            return erro
+
+        # entrada = [atributo, nome, extensao, tamanho, dono, nivel_de_acesso, primeiro_cluster]
+        # primeiro_cluster = self.fat_manager.alocar_arquivo(entrada_origem[3])
+
         return
 
     def comando_listar(self): # lista os elementos do diretório
-        return
+        entradas = self.root_manager.listar_entradas()
+
+        if not entradas:
+            erro = ["[sys] - Diretório vazio"]
+            return erro
+        
+        resultado = []
+        for entrada in entradas:
+            resultado.append(f"{entrada[0]}.{entrada[1]}")
+        
+        return resultado
 
     def comando_mover(self): # move elemento de um diretório para outro
         return

@@ -1,7 +1,7 @@
 
 class FAT_table_manager:
 
-    def alocar_arquivo():
+    def alocar_arquivo(tamanho_arquivo):
         # aloca os clusters dos arquivos na tabela
         return
     

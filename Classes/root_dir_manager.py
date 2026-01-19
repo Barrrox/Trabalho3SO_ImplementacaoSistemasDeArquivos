@@ -13,5 +13,7 @@ class root_dir_manager:
         return
     
     def listar_entradas():
-        #listar todos os arquivos presentes no diretório
+        # lista todas as entradas do diretório
+        # ignorar entradas com atributo 0x01 (oculto ou excluído)
+        # output = [(nome, extensao), (nome, extensao)]
         return
