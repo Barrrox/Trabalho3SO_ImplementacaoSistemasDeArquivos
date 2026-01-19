@@ -56,7 +56,8 @@ class FileSystemManager:
         strings_unitarias = input_string.split()
 
         if not strings_unitarias:
-            return ("Comando inválido ou não existente! -1")
+            erro = ["Comando inválido ou não existente!"]
+            return erro
         else:
             return self.disparar_comando(strings_unitarias)    
 #*******************************************************************************************************# 
@@ -77,11 +78,12 @@ class FileSystemManager:
             metodo = getattr(self, comando_requerido)
             return metodo(*argumentos)
         else:
-            return ("Comando inválido ou não existente! -2")            
+            erro = ["Comando inválido ou não existente!"]
+            return erro
 #*******************************************************************************************************#
     def comando_exemplo(self, *args):
-
-        return f"Comando de exemplo! você escreveu 'exemplo' seguido de {args}."
+        resultado = [f"Comando de exemplo! você escreveu 'exemplo' seguido de {args[0]}."]
+        return resultado
 #*******************************************************************************************************#
     # Exemplo de comando usando retorno com dicionarios
     def comando_exemplo2(self, argumento_teste):
@@ -94,7 +96,7 @@ class FileSystemManager:
 #*******************************************************************************************************#   
     # comando_deletar_arqv nome_arqv
     def comando_deletar_arqv(self, *args):
-        arquivo = args[2].lower()
+        arquivo = args[0].lower()
         erro = ["[sys] - Arquivo não encontrado"]
 
         if not arquivo:

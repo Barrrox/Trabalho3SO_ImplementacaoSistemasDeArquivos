@@ -7,7 +7,7 @@ class interface:
     
     def executar(self):
         while(True): # espera por comando
-            comando = input()
+            comando = input(">> ")
             
             if comando.lower() == "quit": # sai do programa 
                 break
