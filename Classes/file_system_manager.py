@@ -43,6 +43,19 @@ class FileSystemManager:
         """
         return self.__num_entradas_raiz
 #*******************************************************************************************************#    
+#*******************************************************************************************************#
+    def get_tamanho_cluster(self):
+        """
+        retorna o tamanho em bytes de 1 cluster na configuração atual
+        """
+
+        tamanho_setor = self.get_bytes_por_setor
+        setores_por_cluster = self.get_setores_por_cluster
+
+        tamanho_cluster = tamanho_setor*setores_por_cluster
+        
+        return tamanho_cluster
+#*******************************************************************************************************#  
     def ler_input_interface(self, input_string):
         """
         Lê o input da interface do usuário
@@ -86,7 +99,7 @@ class FileSystemManager:
         return resultado
 #*******************************************************************************************************#
     # Exemplo de comando usando retorno com dicionarios
-    def comando_exemplo2(self, argumento_teste):
+    def comando_exemplo2(self, *argumento_teste):
 
         if argumento_teste == 1:
             return {"rodou?": True, "comando" : "exemplo2", "dados" : 1, "msg_erro": None}

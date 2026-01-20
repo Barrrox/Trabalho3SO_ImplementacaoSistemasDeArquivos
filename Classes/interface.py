@@ -13,7 +13,7 @@ class interface:
                 break
             
             else:
-                resultado = self.manager.ler_input_interface(comando) # executa o comando no file_system_manager
+                resultado = self.manager.ler_input_interface(comando) # manda a string para tratamento dentro do file_system_manager
                 self.exibir(resultado)
         
     def exibir(self, resultado):
