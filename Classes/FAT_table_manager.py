@@ -65,10 +65,10 @@ class FAT_table_manager:
         # aloca os clusters dos arquivos na tabela
 
         # chama o root dir manager para alterar a entrada do arquivo no root dir
-        self.root_manager.escrever_entrada(arquivo, clusters_alocados[0])
+        self.root_manager.escrever_entrada(arquivo, clusters_alocados[0]) # nao implementado
 
         # chama o data manager para alocar os clusters no arquivo
-        self.data_manager.alocar_cluster(clusters_alocados, arquivo)
+        self.data_manager.alocar_cluster(clusters_alocados, arquivo) # não implementado
 
 
 

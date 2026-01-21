@@ -1,10 +1,12 @@
 from Classes.file_system_manager import FileSystemManager
 from Formatador.formatador import Formatador
+from Classes.disk_manager import disk_manager
 
 class data_manager:
     def __init__(self):
         self.file_sys_manager = FileSystemManager()
         self.formatador = Formatador()
+        self.disk_manager = disk_manager()
     
     def procurar_cluster_livre(self, arquivo, n_clusters,):
         posicao_clusters = []
@@ -37,6 +39,11 @@ class data_manager:
     # envia a lista de clusters a serem alocados
     # dados == dados a serem escritos no cluster (deve conter os dados em sequência, isto é, sem separação entre clusters)
     def alocar_cluster(self, arquivo, lista_clusters, dados):
+
+        tamanho_cluster = self.file_sys_manager.get_tamanho_cluster()
+        bytes_escritos = 0
+
+        with open(arquivo, 'r+b') as f:
 
         return
     

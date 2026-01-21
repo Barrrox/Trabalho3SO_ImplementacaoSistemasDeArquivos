@@ -34,14 +34,24 @@ class  disk_manager:
     # dados == conjunto de dados completo a serem escritos naquela posição
     def escrever_setor(self, arquivo, posicao, dados): 
 
-        escritas = math.ceil(len(dados) / self.tamanho_setor)
+        escritas = math.ceil(len(dados) / self.tamanho_setor) # quantia de setores a serem escritos
         bytes_escritos = 0
         with open(arquivo, 'r+b') as f:
             f.seek(posicao)
 
             for i in range(escritas):
-                f.write(dados)
-                bytes_escritos += len(dados)
+
+                inicio_escrita = i * self.tamanho_setor
+                fim_escrita = inicio_escrita + self.tamanho_setor
+
+                setor_a_escrever = dados[inicio_escrita:fim_escrita]
+
+                if len(setor_a_escrever) < self.tamanho_setor:
+                    # se o setor a escrever for menor que o tamanho do setor, completa com zeros
+                    setor_a_escrever += b'\x00' * (self.tamanho_setor - len(setor_a_escrever))
+
+                f.write(setor_a_escrever)
+                bytes_escritos += len(setor_a_escrever)
 
             if bytes_escritos != len(dados):
                 print(f"Erro na escrita do setor. bytes_escritos != len(dados): {bytes_escritos} != {len(dados)}")
