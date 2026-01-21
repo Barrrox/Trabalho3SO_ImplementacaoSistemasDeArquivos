@@ -1,7 +1,11 @@
+from math import ceil
+from os import path
+
 from Classes.FAT_table_manager import FAT_table_manager
 from Classes.disk_manager import disk_manager
 from Classes.root_dir_manager import root_dir_manager
 from Classes.data_manager import data_manager
+from Formatador.formatador import Formatador
 
 class FileSystemManager:
     
@@ -16,6 +20,7 @@ class FileSystemManager:
         self.root_manager = root_dir_manager()
         self.data_manager = data_manager()
         self.disk_manager = disk_manager()
+        self.endereco_particao = None
         
 #*******************************************************************************************************#
     def get_bytes_por_setor(self):
@@ -181,10 +186,74 @@ class FileSystemManager:
 
     def comando_mover(self): # move elemento de um diretório para outro
         return
-
-
-
-
-
     
-  
+    def comando_formatar(self):
+        # Pegar inputs do usuário
+
+        print("Iniciando questionário de formatação")
+
+        caminho_particao = input("\nInsira o caminho para a partição: ")
+
+        # Verificar se caminho válido
+        if not path.exists(caminho_particao):
+            erro = ["[sys] - Caminho não encontrado"]
+            return erro
+        
+        try:
+            # Descobrir tamanho do disco em bytes
+            tamanho_particao = path.getsize()
+
+            # Capturar inputs do usuário
+            bytes_por_setor = int(input("\nBytes por setor: "))
+            setores_por_cluster = int(input("\nSetores por cluster: "))
+            num_entradas_raiz = int(input("\nNúmero de entrada da raiz: "))
+
+            # Calculando setores por tabela
+            # Setores por tabela = RoundUp(TotalClusters * TamEntradaFAT / BytesPorSetor)
+            
+            total_clusters = (tamanho_particao/bytes_por_setor)/setores_por_cluster
+            bytes_por_entrada = 32/4 # 32 bits de entrada FAT -> 4 bytes
+
+            tamannho_fat_bytes = total_clusters * ceil(bytes_por_entrada)
+
+            setores_por_tabela = ceil(tamannho_fat_bytes / bytes_por_setor)       
+
+            # Confirmar escolhas
+            print("\n\nConfiguração escolhida")
+            print(f"\n  bytes por setor: {bytes_por_setor}")
+            print(f"\n  setores por cluster: {setores_por_cluster}")
+            print(f"\n  numero de entradas da raiz: {num_entradas_raiz}")
+
+            print("\n\nSistema")        
+            print(f"\n  setores por tabela: {setores_por_tabela} setores")
+            print(f"\n  tamanho da partição: {tamanho_particao} bytes")
+            
+            confirmar = input("\nConfirmar formatação (s/n): ")
+
+            while confirmar not in ["s", "n"]:
+                confirmar = input("\nConfirmar formatação (s/n): ")
+
+            
+            if confirmar == "n":
+                erro = ["[sys] - Formatação cancelada pelo usuário"]
+                return erro
+
+            else:
+                print("\nInicinado formatação...")
+
+                # Instancia e chama o formatador
+                formatador = Formatador()
+
+                formatador.formatar_completo(caminho_particao, tamanho_particao, bytes_por_setor, setores_por_tabela, setores_por_cluster, num_entradas_raiz)
+
+                # Guardar os novos dados
+                self.__bytes_por_setor = bytes_por_setor
+                self.__setores_por_tabela = setores_por_tabela
+                self.__setores_por_cluster = setores_por_cluster
+                self.__num_entradas_raiz = num_entradas_raiz
+                self.endereco_particao = caminho_particao
+
+        except Exception as e:
+            return [f"[sys] - Erro inesperado: {str(e)}"]
+
+        return 

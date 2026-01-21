@@ -3,13 +3,8 @@
  # funções::
     # Zerar o armazenamento
     # Escrever o boot record
-from Classes.file_system_manager import FileSystemManager
 
 class Formatador:
-        
-    def __init__(self):
-        self.file_sys_manager = FileSystemManager()
-
 
     def get_offset(self, secao):
         bytes_setor = self.file_sys_manager.get_bytes_por_setor()
@@ -36,7 +31,7 @@ class Formatador:
             return None
 
     # tamanho partição em bytes
-    def zerar(caminho_particao, tamanho_particao):
+    def zerar(self, caminho_particao, tamanho_particao):
         # preenche a particao com 0s
         
         # opção 1
@@ -52,14 +47,7 @@ class Formatador:
         return 
 
     # recebe os parametros em valor numérico, faz a tradução para binário (little-endian) na hora da escrita
-    def escreve_boot_record(self, arquivo):
-
-        # Falta ajustar arquivo para o input do caminho da partição
-
-        bytes_por_setor = self.file_sys_manager.get_bytes_por_setor()
-        setores_por_tabela = self.file_sys_manager.get_setores_por_tabela()
-        setores_por_cluster = self.file_sys_manager.get_setores_por_cluster()
-        num_entradas_raiz = self.file_sys_manager.get_num_entradas_raiz()
+    def escreve_boot_record(self, arquivo, bytes_por_setor, setores_por_tabela, setores_por_cluster, num_entradas_raiz):
 
         # escreve os parâmetros do boot record
         with open(arquivo, 'r+b') as f:
@@ -148,16 +136,14 @@ class Formatador:
         
         return
 
-    def formatar_completo(self, caminho_particao):
+    def formatar_completo(self, caminho_particao, tamanho_particao, bytes_por_setor, setores_por_tabela, setores_por_cluster, num_entradas_raiz):
         # formata o armazenamento completamente para FAT48
         # boot record | tabela FAT 1 | tabela FAT 2 | root dir | área de dados
 
-
-        tamanho_particao = 1 # katchau
+        # Preenche com zeros
         self.zerar(caminho_particao, tamanho_particao) 
-        self.escreve_boot_record(caminho_particao)
-        self.escreveFATs(caminho_particao)
-        self.escreveRootDir(caminho_particao)
-        self.alocaAreaDeDados(caminho_particao)
+        
+        # Escreve as inforamações no boot record
+        self.escreve_boot_record(caminho_particao, bytes_por_setor, setores_por_tabela, setores_por_cluster, num_entradas_raiz)
         
         return    
