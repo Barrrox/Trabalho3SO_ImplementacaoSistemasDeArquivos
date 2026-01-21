@@ -1,12 +1,14 @@
 import math
 from Classes.file_system_manager import FileSystemManager
 from Classes.data_manager import data_manager
+from Classes.root_dir_manager import root_dir_manager
 
 class FAT_table_manager:
 
     def __init__(self):
         self.file_sys_manager = FileSystemManager()
         self.data_manager = data_manager()
+        self.root_manager = root_dir_manager()
 
     def get_entrada_FAT(self, arquivo, numero_entradas): # pega a posição absoluta de uma entrada FAT livre
         offset_fat = self.file_sys_manager.get_offset("fat1")
@@ -61,6 +63,16 @@ class FAT_table_manager:
             return print("Não há clusters livres suficientes para alocar o arquivo.")
                         
         # aloca os clusters dos arquivos na tabela
+
+        # chama o root dir manager para alterar a entrada do arquivo no root dir
+        self.root_manager.escrever_entrada(arquivo, clusters_alocados[0])
+
+        # chama o data manager para alocar os clusters no arquivo
+        self.data_manager.alocar_cluster(clusters_alocados, arquivo)
+
+
+
+
         return
     
     def desalocar_arquivo(primeiro_cluster):

@@ -32,7 +32,11 @@ class data_manager:
         else:
             return posicao_clusters, print("Erro, não há clusters livres suficientes. Lista incompleta em anexo")
     
-    def alocar_cluster():
+
+    # aloca o cluster no arquivo via disk_manager
+    # envia a lista de clusters a serem alocados
+    # dados == dados a serem escritos no cluster (deve conter os dados em sequência, isto é, sem separação entre clusters)
+    def alocar_cluster(self, arquivo, lista_clusters, dados):
 
         return
     
