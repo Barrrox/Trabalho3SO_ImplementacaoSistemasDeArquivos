@@ -44,7 +44,7 @@ class  disk_manager:
                 inicio_escrita = i * self.tamanho_setor
                 fim_escrita = inicio_escrita + self.tamanho_setor
 
-                setor_a_escrever = dados[inicio_escrita:fim_escrita]
+                setor_a_escrever = dados[inicio_escrita:fim_escrita] # pega 1 setor dos byte_array dos dados para escrever
 
                 if len(setor_a_escrever) < self.tamanho_setor:
                     # se o setor a escrever for menor que o tamanho do setor, completa com zeros
