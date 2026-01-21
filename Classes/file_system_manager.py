@@ -95,7 +95,7 @@ class FileSystemManager:
             return erro
 #*******************************************************************************************************#
     def comando_exemplo(self, *args):
-        resultado = [f"Comando de exemplo! você escreveu 'exemplo' seguido de {args[0]}."]
+        resultado = [f"Comando de exemplo! você escreveu 'exemplo' seguido de {args}."]
         return resultado
 #*******************************************************************************************************#
     # Exemplo de comando usando retorno com dicionarios
