@@ -38,9 +38,9 @@ class FAT_table_manager:
         quantidade_de_clusters = math.ceil(tamanho_arquivo/tamanho_cluster)
 
         clusters_alocados = [] # separa a quantia de clusters livres necessários para o arquivo
-        clusters_alocados = self.data_manager.procurar_cluster_livre(quantidade_de_clusters)
+        clusters_alocados, __Error = self.data_manager.procurar_cluster_livre(quantidade_de_clusters)
        
-        if clusters_alocados: # se tem clusters livres 
+        if __Error == None: # se tem clusters livres 
     
             with open(arquivo, 'r+b') as f:
                 

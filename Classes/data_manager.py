@@ -28,9 +28,9 @@ class data_manager:
 
 
         if len(posicao_clusters) == n_clusters:
-            return posicao_clusters
+            return posicao_clusters, None
         else:
-            return None, print("Erro, não há clusters livres suficientes. Lista incompleta em anexo"), posicao_clusters
+            return posicao_clusters, print("Erro, não há clusters livres suficientes. Lista incompleta em anexo")
     
     def alocar_cluster():
 
