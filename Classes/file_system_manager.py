@@ -48,6 +48,35 @@ class FileSystemManager:
         """
         return self.__num_entradas_raiz
 #*******************************************************************************************************#    
+    def get_offset(self, secao):
+        """
+        Retorna o offset (inteiro) em bytes de uma seção do BootRecord. O parâmetro seção pode deve ser
+        uma das seguintes strings: "boot_record", "fat1", "fat2", "root_dir", "area_dados"
+        """
+        bytes_setor = self.file_sys_manager.get_bytes_por_setor()
+        setores_por_tabela = self.file_sys_manager.get_setores_por_tabela()
+        numero_entradas_raiz = self.file_sys_manager.get_num_entradas_raiz()
+        tamanho_entrada = 22  # tamanho de cada entrada em bytes
+
+        if secao == "boot_record":
+            return 0
+        
+        elif secao == "fat":
+            return bytes_setor  # offset boot record
+        
+        elif secao == "fat2":
+            return bytes_setor + (setores_por_tabela * bytes_setor)  # offset boot record + tabela FAT 1
+        
+        elif secao == "root_dir":
+            return bytes_setor + ( (setores_por_tabela * bytes_setor) * 2)  # offset boot record + 2 tabelas FAT
+        
+        elif secao == "area_dados":
+            return (bytes_setor + ( (setores_por_tabela * bytes_setor) * 2) +
+                    (numero_entradas_raiz * tamanho_entrada))  # offset root dir + tamanho root dir
+        
+        else:
+            return None
+
 #*******************************************************************************************************#
     def get_tamanho_cluster(self):
         """
