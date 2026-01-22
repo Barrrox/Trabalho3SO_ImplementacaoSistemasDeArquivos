@@ -16,10 +16,16 @@ class FileSystemManager:
         self.__setores_por_tabela  = 131072                  # 4 bytes
         self.__setores_por_cluster = 8                      # 1 byte
         self.__num_entradas_raiz   = 512                 # 2 bytes
-        self.fat_manager = FAT_table_manager()
-        self.root_manager = root_dir_manager()
-        self.data_manager = data_manager()
-        self.disk_manager = disk_manager()
+        
+        # Inicializa os managers que não tem dependências primeiro
+        self.root_dir_manager = root_dir_manager()
+        self.disk_manager = disk_manager(self)
+        
+        # Inicializa os managers que dependem dos anteriores
+        self.data_manager = data_manager(self)
+        self.fat_manager = FAT_table_manager(self)
+        
+        
         self.endereco_particao = None
         
 #*******************************************************************************************************#
@@ -83,8 +89,8 @@ class FileSystemManager:
         retorna o tamanho em bytes de 1 cluster na configuração atual
         """
 
-        tamanho_setor = self.get_bytes_por_setor
-        setores_por_cluster = self.get_setores_por_cluster
+        tamanho_setor = self.get_bytes_por_setor()
+        setores_por_cluster = self.get_setores_por_cluster()
 
         tamanho_cluster = tamanho_setor*setores_por_cluster
         

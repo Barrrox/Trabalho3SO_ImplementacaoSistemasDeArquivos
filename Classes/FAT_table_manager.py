@@ -1,14 +1,11 @@
 import math
-from Classes.file_system_manager import FileSystemManager
-from Classes.data_manager import data_manager
-from Classes.root_dir_manager import root_dir_manager
 
 class FAT_table_manager:
 
-    def __init__(self):
-        self.file_sys_manager = FileSystemManager()
-        self.data_manager = data_manager()
-        self.root_manager = root_dir_manager()
+    def __init__(self, file_sys_manager):
+        self.file_sys_manager = file_sys_manager
+        self.data_manager = file_sys_manager.data_manager
+        self.root_manager = file_sys_manager.root_dir_manager
 
     def get_entrada_FAT(self, arquivo, numero_entradas): # pega a posição absoluta de uma entrada FAT livre
         offset_fat = self.file_sys_manager.get_offset("fat1")

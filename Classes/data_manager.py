@@ -1,12 +1,7 @@
-from Classes.file_system_manager import FileSystemManager
-from Formatador.formatador import Formatador
-from Classes.disk_manager import disk_manager
-
 class data_manager:
-    def __init__(self):
-        self.file_sys_manager = FileSystemManager()
-        self.formatador = Formatador()
-        self.disk_manager = disk_manager()
+    def __init__(self, file_sys_manager):
+        self.file_sys_manager = file_sys_manager
+        self.disk_manager = file_sys_manager.disk_manager
     
     def procurar_cluster_livre(self, arquivo, n_clusters,):
         posicao_clusters = []

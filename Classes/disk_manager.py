@@ -1,9 +1,8 @@
-from Classes.file_system_manager import FileSystemManager
 import math
 
-class  disk_manager:
-    def __init__(self):
-        self.file_sys_manager = FileSystemManager()
+class disk_manager:
+    def __init__(self, file_sys_manager):
+        self.file_sys_manager = file_sys_manager
 
         tamanho_setor = self.file_sys_manager.get_bytes_por_setor()
         tamanho_cluster = self.file_sys_manager.get_tamanho_cluster()
