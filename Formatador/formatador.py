@@ -34,14 +34,9 @@ class Formatador:
     def zerar(self, caminho_particao, tamanho_particao):
         # preenche a particao com 0s
         
-        # opção 1
         with open(caminho_particao, 'wb') as f:
-            f.write(b'\x00' * tamanho_particao)
-
-        # # opção 2
-        # with open(caminho_particao, 'wb') as f:
-        #     f.seek(tamanho_particao - 1)
-        #     f.write(b'\x00')
+            f.seek(tamanho_particao - 1)
+            f.write(b'\x00')
         
 
         return 
