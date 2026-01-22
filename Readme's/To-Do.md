@@ -1,103 +1,149 @@
 # Listagem de classes e métodos a serem desenvolvidos
 
-## Arquivos de classes
----------------------------------------------------------------------------------------------
-### file_system_manager
-#### Classes feitas
+## file_system_manager
+### Classes feitas
 ```python
-def get_bytes_por_setor
-def get_setores_por_tabela
-def get_setores_por_cluster
-def get_num_entradas_raiz
-def ler_input_interface
+get_bytes_por_setor
+get_setores_por_tabela
+get_setores_por_cluster
+get_num_entradas_raiz
+get_offset
+get_tamanho_cluster
+ler_input_interface
+disparar_comando
+comando_exemplo
+comando_exemplo2
+comando_deletar
+comando_bootrecord
+comando_copiar
+comando_listar
+comando_mover
+comando_formatar
 ```
-#### Classes faltantes
+### Classes faltantes
 ```python
-```
 
-#### Testes feitos
-```python
-ler_input_interface.py
-```
-
-#### Testes faltantes
-```python
-test_fileSystemManager.py
-```
-
----------------------------------------------------------------------------------------------
-### data_manager
-#### Classes feitas
-```python
-Nenhuma
-```
-#### Classes faltantes
-```python
 ```
 
-#### Testes feitos
-
-
-#### Testes faltantes
-
-
----------------------------------------------------------------------------------------------
-### disk_manager
-#### Classes feitas
+### Testes feitos
 ```python
-Nenhuma
+test_ler_input_interface
+test_comando_formatar_caminho_invalido
+test_comando_formatar_cancelado
+test_comando_formatar_sucesso
 ```
 
-#### Classes faltantes
+### Testes faltantes
 ```python
+comando_deletar
+comando_bootrecord
+comando_copiar
+comando_listar
+comando_mover
 ```
-
-#### Testes feitos
-
-#### Testes faltantes
-
 
 ---------------------------------------------------------------------------------------------
-### FAT_table_manager
-#### Classes feitas
+## data_manager
+### Classes feitas
 ```python
-Nenhuma
+procurar_cluster_livre
+alocar_cluster
+```
+### Classes faltantes
+```python
+liberar_cluster
 ```
 
-#### Classes faltantes
+### Testes feitos
 ```python
-class alocar_arquivo
-class procurar_entrada_livre
-class pegar_proximo_cluster
-class sincronizar_fat
+Nenhum
+```
+
+### Testes faltantes
+```python
+test_procurar_cluster_livre
+test_alocar_cluster
+```
+
+---------------------------------------------------------------------------------------------
+## disk_manager
+### Classes feitas
+```python
+ler_setor
+escrever_setor
+```
+
+### Classes faltantes
+```python
+
+```
+
+### Testes feitos
+```python
+Nenhum
+```
+
+### Testes faltantes
+```python
+test_ler_setor
+test_escrever_setor
+```
+
+
+---------------------------------------------------------------------------------------------
+## FAT_table_manager
+### Classes feitas
+```python
+get_entrada_FAT
+alocar_arquivo
+```
+
+### Classes faltantes
+```python
+desalocar_arquivo
+pegar_proximo_cluster
+sincronizar_fat
 ```
  
-#### Testes feitos
+### Testes feitos
+```python
+Nenhum
+```
 
-#### Testes faltantes
-
+### Testes faltantes
+```python
+test_get_entrada_FAT
+test_alocar_arquivo
+```
 
 ---------------------------------------------------------------------------------------------
-### root_dir_manager
-#### Classes feitas
+## root_dir_manager
+### Classes feitas
 ```python
 Nenhuma
 ```
 
-#### Classes faltantes
+### Classes faltantes
 ```python
+escrever_entrada
+ler_entrada
+desalocar_entrada
+listar_entradas
 ```
 
-#### Testes feitos
+### Testes feitos
+```python
+Nenhum
+```
 
+### Testes faltantes
+```python
+test_root_dir_manager
+```
 
-#### Testes faltantes
-
-
----------------------------------------------------------------------------------------------
-
-
+------------------------------------------------------------------------------------------
 ##  Formatador
+
 ### Testes feitos
 ```python
 teste_formatador
@@ -109,6 +155,17 @@ test_escrever_boot_record
 
 ```
 
-
+------------------------------------------------------------------------------------------
 ## Interface
-/
+
+
+### Classes feitas
+```python
+executar
+exibir
+```
+
+### Classes faltantes
+```python
+
+```
