@@ -12,3 +12,9 @@ Em python existe a biblioteca padrão para testes chamada **unittest**. Para o u
 class TesteFormatador(TestCase):
 ```
 - Usar setUp e tearDown: São métodos definidos pela classe TestCase e são executados automaticamente sem serem chamados. Precisam ser usados para inicializar e fechar o teste. 
+
+## Rodar todos os testes
+
+```python
+python -m unittest discover -s Testes -p "teste_*.py"
+```
