@@ -16,6 +16,9 @@ class FileSystemManager:
         self.__setores_por_tabela  = 131072                  # 4 bytes
         self.__setores_por_cluster = 8                      # 1 byte
         self.__num_entradas_raiz   = 512                 # 2 bytes
+        self.__endereco_particao = None
+        self.__tamanho_total_particao = 0
+  
         
         # Inicializa os managers que não tem dependências primeiro
         self.root_dir_manager = root_dir_manager()
@@ -24,10 +27,7 @@ class FileSystemManager:
         # Inicializa os managers que dependem dos anteriores
         self.data_manager = data_manager(self)
         self.fat_manager = FAT_table_manager(self)
-        
-        
-        self.endereco_particao = None
-        
+      
 #*******************************************************************************************************#
     def get_bytes_por_setor(self):
         """
@@ -53,6 +53,34 @@ class FileSystemManager:
         retorna o número de entradas do root dir
         """
         return self.__num_entradas_raiz
+#*******************************************************************************************************#    
+    def get_endereco_particao(self):
+        """Retorna o caminho do arquivo .bin atual"""
+        return self.__endereco_particao
+#*******************************************************************************************************#    
+    def set_endereco_particao(self, endereco):
+        """
+        Define o endereço da partição. 
+        Valida se o caminho é uma string e se o arquivo realmente existe.
+        """
+        if isinstance(endereco, str):
+            self.__endereco_particao = endereco
+            return True
+        return False
+#*******************************************************************************************************#    
+    def get_tamanho_total_particao(self):
+        """Retorna o tamanho total da particao em bytes"""
+        return self.__tamanho_total_particao
+#*******************************************************************************************************#    
+    def set_tamanho_total_particao(self, tamanho):
+        """
+        Define o tamanho total da partição em bytes
+        Garante que o tamanho seja um valor numérico positivo.
+        """
+        if isinstance(tamanho, (int, float)) and tamanho >= 0:
+            self.__tamanho_total_particao = tamanho
+        return
+        
 #*******************************************************************************************************#    
     def get_offset(self, secao):
         """
@@ -235,7 +263,7 @@ class FileSystemManager:
             return erro
         
         try:
-            # Descobrir tamanho do disco em bytes
+            # Descobrir tamanho da partição em bytes
             tamanho_particao = path.getsize()
 
             # Capturar inputs do usuário
@@ -291,4 +319,4 @@ class FileSystemManager:
         except Exception as e:
             return [f"[sys] - Erro inesperado: {str(e)}"]
 
-        return 
+        return
