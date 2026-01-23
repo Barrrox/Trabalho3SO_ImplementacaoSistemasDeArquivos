@@ -1,7 +1,7 @@
 import unittest
 import os
 
-from Formatador.formatador import formatador
+from Formatador.formatador import Formatador
 
 class TesteZerar(unittest.TestCase):
 
@@ -12,7 +12,7 @@ class TesteZerar(unittest.TestCase):
         de zeros, não estariamos testando realmente se a função está funcionando. 
         Então criamos um arquivo mock para simular a partição que será excluido depois
         """
-        self.formatador = formatador
+        self.formatador = Formatador()
         self.caminho_teste = "disco_teste_zerar.bin"
         self.tamanho_teste = 1024 * 1024 # 1 MB
 
@@ -27,7 +27,7 @@ class TesteZerar(unittest.TestCase):
     def test_zerar(self):
 
         # chama a função para testar
-        formatador.zerar(self.caminho_teste, self.tamanho_teste)
+        self.formatador.zerar(self.caminho_teste, self.tamanho_teste)
 
         # Verifica se tem o mesmo tamamnho
         tamanho_real = os.path.getsize(self.caminho_teste)
@@ -48,8 +48,9 @@ class TesteEscreverBootRecord(unittest.TestCase):
     def setUp(self):
         self.caminho_teste = "disco_teste_escrever_boot_record.bin"
         self.tamanho_disco = 2048 # 2Kb so pra testar
-        formatador.zerar(self.caminho_teste, self.tamanho_disco)
-        self.formatador = formatador()
+        self.formatador = Formatador()
+        self.formatador.zerar(self.caminho_teste, self.tamanho_disco)
+
 
     def tearDown(self):
         if os.path.exists(self.caminho_teste):

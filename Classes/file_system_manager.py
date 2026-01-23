@@ -182,9 +182,9 @@ class FileSystemManager:
         return resultado
 #*******************************************************************************************************#
     # Exemplo de comando usando retorno com dicionarios
-    def comando_exemplo2(self, *argumento_teste):
+    def comando_exemplo2(self, *args):
 
-        if argumento_teste == 1:
+        if args[0] == 1:
             return {"rodou?": True, "comando" : "exemplo2", "dados" : 1, "msg_erro": None}
         else:
             return {"rodou?": False, "comando" : "exemplo2", "dados" : None, "msg_erro": "Não digitou 1"}

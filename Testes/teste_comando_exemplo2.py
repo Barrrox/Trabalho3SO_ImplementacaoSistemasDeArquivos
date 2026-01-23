@@ -27,9 +27,9 @@ class TesteSystemFileManager(unittest.TestCase):
 
         # 2. Resposta certa
 
-        retorno_esperado = True
+        retorno_esperado = {"rodou?": True, "comando" : "exemplo2", "dados" : 1, "msg_erro": None}
 
-        dict_retorno_real = self.file_system_manager.comando_exemplo2(1)["rodou?"]
+        dict_retorno_real = self.file_system_manager.comando_exemplo2(1)
 
         retorno_real = dict_retorno_real
 
