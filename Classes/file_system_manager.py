@@ -36,23 +36,38 @@ class FileSystemManager:
 
         return self.__bytes_por_setor
 #*******************************************************************************************************#
+    def set_bytes_por_setor(self, bytes_por_setor):
+        """
+        retorna o número de bytes por setor
+        """
+
+        self.__bytes_por_setor = bytes_por_setor
+
+        return    
+#*******************************************************************************************************#
     def get_setores_por_tabela(self):
-        """
-        retorna o número de setores por tabela
-        """
         return self.__setores_por_tabela
 #*******************************************************************************************************#
+    def set_setores_por_tabela(self, setores_por_tabela):
+        self.__setores_por_tabela = setores_por_tabela
+        return
+#*******************************************************************************************************#
     def get_setores_por_cluster(self):
-        """
-        retorna o número de setores por cluster
-        """
         return self.__setores_por_cluster 
+#*******************************************************************************************************#
+    def set_setores_por_cluster(self, setores_por_cluster):
+        self.__setores_por_cluster = setores_por_cluster
+        return
 #*******************************************************************************************************#
     def get_num_entradas_raiz(self):
         """
         retorna o número de entradas do root dir
         """
         return self.__num_entradas_raiz
+#*******************************************************************************************************#
+    def set_num_entradas_raiz(self, num_entradas_raiz):
+        self.__num_entradas_raiz = num_entradas_raiz
+        return
 #*******************************************************************************************************#    
     def get_endereco_particao(self):
         """Retorna o caminho do arquivo .bin atual"""
