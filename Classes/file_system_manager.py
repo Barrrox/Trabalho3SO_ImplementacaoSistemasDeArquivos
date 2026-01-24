@@ -198,7 +198,7 @@ class FileSystemManager:
         if not arquivo:
             return erro
         
-        entrada = self.root_manager.ler_entrada(arquivo) # procura entrada do arquivo
+        entrada = self.root_dir_manager.ler_entrada(arquivo) # procura entrada do arquivo
 
         if not entrada:
             return erro
@@ -207,7 +207,7 @@ class FileSystemManager:
         primeiro_cluster = entrada[6]
 
         self.fat_manager.desalocar_arquivo(primeiro_cluster)
-        self.root_manager.desalocar_entrada(arquivo)
+        self.root_dir_manager.desalocar_entrada(arquivo)
         self.fat_manager.sincronizar_fat(primeiro_cluster)
 
         resultado = [f"arquivo {arquivo} excluido"]
@@ -239,7 +239,7 @@ class FileSystemManager:
             erro = ["[sys] - É necessário informar a origem e o destino do arquivo"]
             return erro
         
-        entrada_origem = self.root_manager.ler_entrada()
+        entrada_origem = self.root_dir_manager.ler_entrada()
         if not entrada_origem:
             erro = ["[sys] - Arquivo não encontrado"]
             return erro
@@ -250,7 +250,7 @@ class FileSystemManager:
         return
 
     def comando_listar(self): # lista os elementos do diretório
-        entradas = self.root_manager.listar_entradas()
+        entradas = self.root_dir_manager.listar_entradas()
 
         if not entradas:
             erro = ["[sys] - Diretório vazio"]
