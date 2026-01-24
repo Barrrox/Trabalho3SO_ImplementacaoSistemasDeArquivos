@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 from Classes.file_system_manager import FileSystemManager
 
@@ -89,6 +89,41 @@ class TesteSystemFileManager(unittest.TestCase):
         self.assertEqual(self.file_system_manager.get_bytes_por_setor(), 512)
         self.assertEqual(self.file_system_manager.get_setores_por_cluster(), 4)
 
+    def test_comando_deletar_sucesso(self):
+        """Testa a deleção de um arquivo com sucesso"""
+        # Criamos Mocks para os managers que o comando utiliza
+        self.file_system_manager.root_dir_manager = MagicMock()
+        self.file_system_manager.fat_manager = MagicMock()
+        
+        # Simula que o arquivo existe 
+        # Formato: [atributo, nome, extensao, tamanho, dono, nivel_de_acesso, primeiro_cluster]
+        # O cluster 10 é o que deve ser passado para a FAT
+        self.file_system_manager.root_dir_manager.ler_entrada.return_value = [0x00, "teste", "txt", 1024, 1, 1, 10]
+        
+        # Execução
+        nome_arquivo = "teste.txt"
+        retorno = self.file_system_manager.comando_deletar(nome_arquivo)
+        
+        # Verificações
+        retorno_esperado = [f"arquivo {nome_arquivo} excluido"]
+        self.assertEqual(retorno, retorno_esperado)
+        
+        # Verifica se os métodos de "limpeza" foram chamados com os dados certos
+        self.file_system_manager.fat_manager.desalocar_arquivo.assert_called_once_with(10)
+        self.file_system_manager.root_dir_manager.desalocar_entrada.assert_called_once_with(nome_arquivo)
+        self.file_system_manager.fat_manager.sincronizar_fat.assert_called_once_with(10)
+
+    def test_comando_deletar_arquivo_nao_encontrado(self):
+        """Testa o erro ao tentar deletar um arquivo que não existe no root dir"""
+        self.file_system_manager.root_dir_manager = MagicMock()
+        
+        # Simula que a busca não retornou nada
+        self.file_system_manager.root_dir_manager.ler_entrada.return_value = None
+        
+        retorno = self.file_system_manager.comando_deletar("arquivo_fantasma.bin")
+        
+        retorno_esperado = ["[sys] - Arquivo não encontrado"]
+        self.assertEqual(retorno, retorno_esperado)
 
 if __name__ == "__main__":
     unittest.main()
