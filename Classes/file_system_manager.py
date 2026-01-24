@@ -12,16 +12,16 @@ class FileSystemManager:
     def __init__(self):
     # Inicializa os atributos do Boot Record
     # self._<atributo> representa um atributo PRIVATE  
-        self.__bytes_por_setor     = 512                        # 2 bytes # ALTERAR PARA FSEEK DE ARQUIVO DPS, HARDCODE SO PARA TESTE
-        self.__setores_por_tabela  = 131072                  # 4 bytes
-        self.__setores_por_cluster = 8                      # 1 byte
-        self.__num_entradas_raiz   = 512                 # 2 bytes
+        self.__bytes_por_setor     = 512    # 2 bytes
+        self.__setores_por_tabela  = 131072 # 4 bytes
+        self.__setores_por_cluster = 8      # 1 byte
+        self.__num_entradas_raiz   = 512    # 2 bytes
         self.__endereco_particao = None
         self.__tamanho_total_particao = 0
   
         
         # Inicializa os managers que não tem dependências primeiro
-        self.root_dir_manager = root_dir_manager()
+        self.root_dir_manager = root_dir_manager(self)
         self.disk_manager = disk_manager(self)
         
         # Inicializa os managers que dependem dos anteriores
@@ -102,9 +102,9 @@ class FileSystemManager:
         Retorna o offset (inteiro) em bytes de uma seção do BootRecord. O parâmetro seção pode deve ser
         uma das seguintes strings: "boot_record", "fat1", "fat2", "root_dir", "area_dados"
         """
-        bytes_setor = self.file_sys_manager.get_bytes_por_setor()
-        setores_por_tabela = self.file_sys_manager.get_setores_por_tabela()
-        numero_entradas_raiz = self.file_sys_manager.get_num_entradas_raiz()
+        bytes_setor = self.get_bytes_por_setor()
+        setores_por_tabela = self.get_setores_por_tabela()
+        numero_entradas_raiz = self.get_num_entradas_raiz()
         tamanho_entrada = 22  # tamanho de cada entrada em bytes
 
         if secao == "boot_record":
