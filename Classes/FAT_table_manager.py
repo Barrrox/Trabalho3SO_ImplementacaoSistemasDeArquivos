@@ -7,7 +7,19 @@ class FAT_table_manager:
         self.data_manager = file_sys_manager.data_manager
         self.root_manager = file_sys_manager.root_dir_manager
 
-    def get_entrada_FAT(self, arquivo, numero_entradas): # pega a posição absoluta de uma entrada FAT livre
+    def procurar_entradas_FAT(self, arquivo, numero_entradas): # pega a posição relativa de uma entrada FAT livre
+        """
+        Procura 'numero_entradas' entradas livres no arquivo
+
+        Parâmetros:
+            arquivo: path absoluto para o arquivo
+            numero_entradas: número de entradas requeridas
+
+        Retorna:
+            entradas: lista com as posiçõe relativas das entradas livres encontradas 
+            
+        """
+        
         offset_fat = self.file_sys_manager.get_offset("fat1")
         
         entradas = []
@@ -15,18 +27,24 @@ class FAT_table_manager:
             f.seek(offset_fat)
 
             posicao = 0
-
-            for i in range(numero_entradas):
+         
+            # loop começando em 1 para ignorar a entrada 0 (reservada)        
+            for i in range(1, numero_entradas+1):
                 f.seek(posicao)
                 entrada_bytes = f.read(4)  # Lê 4 bytes (32 bits) da entrada FAT
                 
-                if entrada_bytes != 0x00000000:
-                    posicao = f.tell()
+                # Se entrada ocupada
+                if entrada_bytes != 0x00000000:                   
+                    
+                    pass # Entrada ocupada, continua procurando
                 else:
-                    entradas.append(posicao)
-            
-        return entradas
+                    entradas.append(i)  # Adiciona a posição da entrada livre à lista
 
+        if len(entradas) < numero_entradas:
+            __Error = "Não há entradas FAT livres suficientes."
+            return entradas, __Error
+
+        return entradas, None
 
     def alocar_arquivo(self, tamanho_arquivo, arquivo):
 
