@@ -7,13 +7,72 @@ class root_dir_manager:
 
 
 
-    def escrever_entrada(atributo, nome, extensao, tamanho, dono, nivel_de_acesso, primeiro_cluster):        
+    def escrever_entrada_arquivo(self, atributo, nome : str, extensao : str, tamanho, dono, nivel_de_acesso, primeiro_cluster):        
         
-        # verificar se nome.extensao já existe
-        # 
+        # verificação se o arquiivo já existe
+        entrada_existente = self.ler_entrada(nome, extensao)
+        if entrada_existente is not None:
+            raise Exception("Erro: Entrada com o mesmo nome e extensão já existe.")
         
-        return
+        
+        # Verificação prévia de adequação ao sistema
+        if tamanho > (2**32 -1):
+            raise Exception("Erro: Tamanho do arquivo excede o limite máximo de 4GB.")
+        if len(nome) > 8:
+            raise Exception("Erro: Nome do arquivo excede o limite máximo de 8 caracteres.")
+        if len(extensao) > 3:
+            raise Exception("Erro: Extensão do arquivo excede o limite máximo de 3 caracteres.")
 
+        
+        offset_root_dir = self.file_sys_manager.get_offset("root_dir")
+        caminho_particao = self.file_sys_manager.get_endereco_particao()
+
+        with open(caminho_particao, "r+b") as f:
+            f.seek(offset_root_dir)
+
+            # Encontrar a primeira entrada livre (atributo 0x00 ou 0x01)
+
+            while True:
+                
+                byte_array = f.read(22)  # Cada entrada tem 22 bytes
+                
+                posicao_atual = f.tell() # salva a posição da entrada sendo lida
+                checkar_leitura = posicao_atual
+
+                if byte_array[0] == 0x0: # encontrou uma entrada livre
+                    f.seek(posicao_atual - 22)  # Volta para o início da entrada livre # testar
+                    # Prepara os dados para escrita
+        
+                    atributo_bytes     = atributo.to_bytes(1, 'little')               
+                    nome_binario       = ' '.join('{0:08b}'.format(ord(x), 'b') for x in nome)
+                    extensao_binario   = ' '.join('{0:08b}'.format(ord(x), 'b') for x in extensao)
+                    tamanho_bytes      = tamanho.to_bytes(4, 'little')
+                    dono_bytes         = dono.to_bytes(1, 'little')
+                    nivel_acesso_bytes = nivel_de_acesso.to_bytes(1, 'little')
+                #   primeiro_cluster já deve estar em binário (posição absoluta)
+
+                    # Escreve os dados na entrada livre
+                    f.write(atributo_bytes)
+                    f.write(nome_binario)
+                    f.write(extensao_binario)
+                    f.write(tamanho_bytes)
+                    f.write(dono_bytes)
+                    f.write(nivel_acesso_bytes)
+                    f.write(primeiro_cluster)  
+
+                    if f.tell() != checkar_leitura: # algo deu errado na escrita # tratar a exclusao de tudo relacionado ao arquivo
+                        raise Exception("Erro: Falha ao escrever a entrada no diretório raiz.")
+                        
+                    else:
+                        break # escrita deu certo, sai do loop
+                else:
+                    continue # continua procurando uma entrada livre
+
+        return True # escreveu com sucesso            
+
+
+
+                    #
     def ler_entrada(self, nome_arquivo : str, extensao_arquivo : str):
         """
         Procura e retorna os atributos de uma entrada
