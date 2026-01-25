@@ -8,23 +8,23 @@ class FAT_table_manager:
         self.root_manager = file_sys_manager.root_dir_manager
 
 
-    def verificar_espaco_disponivel(self, arquivo, tamanho_arquivo):      
+    def verificar_espaco_disponivel(self, tamanho_arquivo):      
         
         """
         Verifica se há espaço disponível na tabela FAT para alocar um arquivo de tamanho 'tamanho_arquivo'
 
         Parâmetros:
-            arquivo: path absoluto para o arquivo
             tamanho_arquivo: tamanho do arquivo a ser alocado
 
         Retorna:
             bool: True se houver espaço disponível, False caso contrário
             
         """
+
         tamanho_cluster = self.file_sys_manager.get_tamanho_cluster()
         quantidade_de_clusters_necessarios = math.ceil(tamanho_arquivo / tamanho_cluster)
         
-        entradas = self.procurar_entradas_FAT(arquivo, quantidade_de_clusters_necessarios)
+        entradas = self.buscar_entradas_livres(quantidade_de_clusters_necessarios)
 
         if len(entradas) != quantidade_de_clusters_necessarios:
             return False
@@ -32,23 +32,24 @@ class FAT_table_manager:
         else:   
             return True
 
-    def procurar_entradas_FAT(self, arquivo, numero_entradas): # pega a posição relativa de uma entrada FAT livre
+    def buscar_entradas_livres(self, numero_entradas): # pega a posição relativa de uma entrada FAT livre
         """
-        Procura 'numero_entradas' entradas livres no arquivo
+        Procura entradas livres no arquivo e retorna suas posições relativas
 
         Parâmetros:
-            arquivo: path absoluto para o arquivo
             numero_entradas: número de entradas requeridas
 
         Retorna:
-            entradas: lista com as posiçõe relativas das entradas livres encontradas 
+            entradas: lista com as posições relativas das entradas livres encontradas 
             
         """
+
+        endereco_particao = self.file_sys_manager.get_endereco_particao()
         
         offset_fat = self.file_sys_manager.get_offset("fat1")
         
         entradas = []
-        with open(arquivo, 'r+b') as f:
+        with open(endereco_particao, 'r+b') as f:
             f.seek(offset_fat)
 
             posicao = 0
@@ -71,12 +72,12 @@ class FAT_table_manager:
 
         return entradas, None
 
-    def alocar_entradas_FAT(self, sistema, tamanho_arquivo) :
+    def alocar_entradas_FAT(self, tamanho_arquivo) :
         """
-        sistema: path absoluto para o sistema de arquivos
         tamanho_arquivo: tamanho do arquivo a ser alocado
         
         """
+        endereco_particao = self.file_sys_manager.get_endereco_particao()
 
         # falta alterar o campo 1° cluster da entrada do arquivo no root dir
 
@@ -84,7 +85,7 @@ class FAT_table_manager:
 
         quantidade_de_clusters = math.ceil(tamanho_arquivo/tamanho_cluster)
 
-        entradas, __Error = self.procurar_entradas_FAT(sistema, quantidade_de_clusters) 
+        entradas, __Error = self.buscar_entradas_livres(quantidade_de_clusters) 
 
         offset_fat = self.file_sys_manager.get_offset("fat1")
 
@@ -92,7 +93,7 @@ class FAT_table_manager:
        
         if __Error == None: # se tem clusters livres 
     
-            with open(sistema, 'r+b') as f:
+            with open(endereco_particao, 'r+b') as f:
                 
                 # pega as entradas livres necessárias na tabela FAT
 

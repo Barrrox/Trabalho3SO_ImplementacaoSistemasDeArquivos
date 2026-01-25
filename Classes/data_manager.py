@@ -6,7 +6,7 @@ class data_manager:
     # aloca o cluster no arquivo via disk_manager
     # envia a lista de clusters a serem alocados
     # dados == dados a serem escritos no cluster (deve conter os dados em sequência, isto é, sem separação entre clusters)
-    def alocar_cluster(self, arquivo, lista_clusters, dados):
+    def alocar_cluster(self, lista_clusters, dados):
 
         tamanho_cluster = self.file_sys_manager.get_tamanho_cluster()
         numero_de_escritas = len(lista_clusters)
@@ -20,7 +20,7 @@ class data_manager:
                 # se os dados a escrever forem menores que o tamanho do cluster, completa com zeros
                 dados_a_escrever += b'\x00' * (tamanho_cluster - len(dados_a_escrever))
 
-            self.disk_manager.escrever_setor(arquivo, posicao, dados_a_escrever) # manda a requisição de escrita para o disk manager
+            self.disk_manager.escrever_setor(posicao, dados_a_escrever) # manda a requisição de escrita para o disk manager
             bytes_escritos += len(dados_a_escrever) # variável de controle de bytes escritos
 
         if bytes_escritos != len(dados):

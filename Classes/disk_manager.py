@@ -13,14 +13,16 @@ class disk_manager:
     # posicao == posição absoluta em bytes no arquivo
     # dados == tamanho em clusters do conjunto de dados a ser lido naquela posição
     # retorna uma lista com os dados lidos, cada posição da lista é 1 setor (512 bytes)
-    def ler_setor(self, arquivo, posicao, dados):
+    def ler_setor(self, posicao, dados):
+
+        endereco_particao = self.file_sys_manager.get_endereco_particao()
 
         dados *= self.cluster_em_bytes
         leituras = math.ceil(dados / self.tamanho_setor)
 
         lido = []
 
-        with open(arquivo, 'r+b') as f:
+        with open(endereco_particao, 'r+b') as f:
             f.seek(posicao)
 
             for i in range(leituras):
@@ -31,11 +33,13 @@ class disk_manager:
 
     # posicao == posição absoluta em bytes no arquivo
     # dados == conjunto de dados completo a serem escritos naquela posição
-    def escrever_setor(self, arquivo, posicao, dados): 
+    def escrever_setor(self, posicao, dados): 
+
+        endereco_particao = self.file_sys_manager.get_endereco_particao()
 
         escritas = math.ceil(len(dados) / self.tamanho_setor) # quantia de setores a serem escritos
         bytes_escritos = 0
-        with open(arquivo, 'r+b') as f:
+        with open(endereco_particao, 'r+b') as f:
             f.seek(posicao)
 
             for i in range(escritas):
