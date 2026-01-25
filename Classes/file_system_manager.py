@@ -282,6 +282,16 @@ class FileSystemManager:
     def comando_formatar(self, *args):
         """
         comando_formatar operacionaliza a formatação da partição
+
+        args:
+            endereco_particao: path absoluto para o endereço da partição
+            bytes_por_setor: quantidade de bytes por setor desejada
+            setores_por_cluster: setores por cluster desejados
+            num_entradas_raiz: numero de entradas no root dir desejado
+
+        Retornos:
+            Lista com uma mensagem de sucesso caso sucesso na formatação
+            Lista com uma mensagem de erro caso falha
         """
         # 1. Inicialização de variáveis via argumentos
         endereco_particao    = args[0]
