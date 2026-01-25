@@ -271,23 +271,7 @@ class FileSystemManager:
             resultado.append(f"{entrada[0]}.{entrada[1]}")
         
         return resultado
-
-    def comando_mover(self, *args): # move elemento de um diretório para outro
-
-        # 1. Verificar se origem eh um arquivo existente
-        # 2. Verificar se destino eh um diretorio existente
-        # 3. Verificar se há espaço suficiente 
-        #    Isso serve para a situação em que a particao está toda ocupada. Se está todo ocupado
-        #    não será possível criar a cópia para mover antes de desalocar da origem. 
-        # 4. Ler entrada
-        buffer_entrada = self.root_dir_manager.ler_entrada()        
-        # 5. Desalocar entrada antiga
-        
-
-
-
-        return
-    
+#*******************************************************************************************************#    
     def comando_formatar(self, *args):
         """
         comando_formatar operacionaliza a formatação da partição
