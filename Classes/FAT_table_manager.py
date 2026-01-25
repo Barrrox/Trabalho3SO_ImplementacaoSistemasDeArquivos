@@ -7,6 +7,31 @@ class FAT_table_manager:
         self.data_manager = file_sys_manager.data_manager
         self.root_manager = file_sys_manager.root_dir_manager
 
+
+    def verificar_espaco_disponivel(self, arquivo, tamanho_arquivo):      
+        
+        """
+        Verifica se há espaço disponível na tabela FAT para alocar um arquivo de tamanho 'tamanho_arquivo'
+
+        Parâmetros:
+            arquivo: path absoluto para o arquivo
+            tamanho_arquivo: tamanho do arquivo a ser alocado
+
+        Retorna:
+            bool: True se houver espaço disponível, False caso contrário
+            
+        """
+        tamanho_cluster = self.file_sys_manager.get_tamanho_cluster()
+        quantidade_de_clusters_necessarios = math.ceil(tamanho_arquivo / tamanho_cluster)
+        
+        entradas = self.procurar_entradas_FAT(arquivo, quantidade_de_clusters_necessarios)
+
+        if len(entradas) != quantidade_de_clusters_necessarios:
+            return False
+
+        else:   
+            return True
+
     def procurar_entradas_FAT(self, arquivo, numero_entradas): # pega a posição relativa de uma entrada FAT livre
         """
         Procura 'numero_entradas' entradas livres no arquivo
