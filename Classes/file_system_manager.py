@@ -19,7 +19,6 @@ class FileSystemManager:
         self.__endereco_particao = None
         self.__tamanho_total_particao = 0
   
-        
         # Inicializa os managers que não tem dependências primeiro
         self.root_dir_manager = root_dir_manager(self)
         self.disk_manager = disk_manager(self)
@@ -36,7 +35,6 @@ class FileSystemManager:
 
         return self.__bytes_por_setor
 #*******************************************************************************************************#
-
     def get_setores_por_tabela(self):
         return self.__setores_por_tabela
 #*******************************************************************************************************#
@@ -102,7 +100,6 @@ class FileSystemManager:
         
         return tamanho_cluster
 
-
 #*******************************************************************************************************
     def set_setores_por_tabela(self, setores_por_tabela):
         self.__setores_por_tabela = setores_por_tabela
@@ -144,9 +141,6 @@ class FileSystemManager:
             self.__endereco_particao = endereco
             return True
         return False
-
-
-
 
 #*******************************************************************************************************#   
     def ler_input_interface(self, input_string):
@@ -239,26 +233,39 @@ class FileSystemManager:
                       ]
         return bootrecord
 #*******************************************************************************************************#
-    
+    # args[0] = origem
+    # args[1] = destino
+
     def comando_copiar(self, *args): # copia os elementos
-        # comando_copiar diretorio1 diretorio2
-        origem = args[1].lower()
-        destino = args[2].lower()
 
-        if not origem or not destino:
-            erro = ["[sys] - É necessário informar a origem e o destino do arquivo"]
-            return erro
+        """
+        1 - Identificar o tipo de cópia 
+            - 1.1 Cópia interna (para dentro) : comparar args[0] e <insira string de path para o endereço da partição>
+            - 1.2 Cópia externa (de/para o .bin) : else da comparação acima
+
+        1.1 - Cópia Interna
+            - Verificar se o arquivo de origem existe : comando_listar + root_dir_manager.ler_entrada()
+            - Verificar se há espaço disponível na partição : fat_manager.verificar_espaco_disponivel(tamanho_arquivo)
+            - Se espaço, alocar FAT : fat_manager.alocar_entradas_FAT(tamanho_arquivo)
+                - Alocar entrada no root directory : 
+                - Copiar dados para os clusters alocados : pega o retorno da alocação FAT que contém a posição relativa das entradas alocadas e escreve os dados via data_manager.escrever_dados()
         
-        entrada_origem = self.root_dir_manager.ler_entrada()
-        if not entrada_origem:
-            erro = ["[sys] - Arquivo não encontrado"]
-            return erro
+        1.2 - Cópia Externa
+            - Verificar se o arquivo de origem existe nesse sistema
+                Alternativa 1 - Verificar se há espaço disponível na partição
+                Alternativa 2 - Tentar copiar direto e verificar o retorno para saber se foi ou deu erro
 
-        # entrada = [atributo, nome, extensao, tamanho, dono, nivel_de_acesso, primeiro_cluster]
-        # primeiro_cluster = self.fat_manager.alocar_arquivo(entrada_origem[3])
+        2 - Verificar se é um diretório ou arquivo único 
+            2.1 - Se diretório, acionar FLAG
+            
+        """
+
+
+  
+    
 
         return
-
+#*******************************************************************************************************#
     def comando_listar(self): # lista os elementos do diretório
         entradas = self.root_dir_manager.listar_entradas()
 
