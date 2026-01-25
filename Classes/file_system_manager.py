@@ -36,28 +36,12 @@ class FileSystemManager:
 
         return self.__bytes_por_setor
 #*******************************************************************************************************#
-    def set_bytes_por_setor(self, bytes_por_setor):
-        """
-        retorna o número de bytes por setor
-        """
 
-        self.__bytes_por_setor = bytes_por_setor
-
-        return    
-#*******************************************************************************************************#
     def get_setores_por_tabela(self):
         return self.__setores_por_tabela
 #*******************************************************************************************************#
-    def set_setores_por_tabela(self, setores_por_tabela):
-        self.__setores_por_tabela = setores_por_tabela
-        return
-#*******************************************************************************************************#
     def get_setores_por_cluster(self):
         return self.__setores_por_cluster 
-#*******************************************************************************************************#
-    def set_setores_por_cluster(self, setores_por_cluster):
-        self.__setores_por_cluster = setores_por_cluster
-        return
 #*******************************************************************************************************#
     def get_num_entradas_raiz(self):
         """
@@ -65,38 +49,17 @@ class FileSystemManager:
         """
         return self.__num_entradas_raiz
 #*******************************************************************************************************#
-    def set_num_entradas_raiz(self, num_entradas_raiz):
-        self.__num_entradas_raiz = num_entradas_raiz
-        return
-#*******************************************************************************************************#    
+  
     def get_endereco_particao(self):
         """Retorna o caminho do arquivo .bin atual"""
         return self.__endereco_particao
 #*******************************************************************************************************#    
-    def set_endereco_particao(self, endereco):
-        """
-        Define o endereço da partição. 
-        Valida se o caminho é uma string e se o arquivo realmente existe.
-        """
-        if isinstance(endereco, str):
-            self.__endereco_particao = endereco
-            return True
-        return False
-#*******************************************************************************************************#    
+ 
     def get_tamanho_total_particao(self):
         """Retorna o tamanho total da particao em bytes"""
         return self.__tamanho_total_particao
 #*******************************************************************************************************#    
-    def set_tamanho_total_particao(self, tamanho):
-        """
-        Define o tamanho total da partição em bytes
-        Garante que o tamanho seja um valor numérico positivo.
-        """
-        if isinstance(tamanho, (int, float)) and tamanho >= 0:
-            self.__tamanho_total_particao = tamanho
-        return
-        
-#*******************************************************************************************************#    
+
     def get_offset(self, secao):
         """
         Retorna o offset (inteiro) em bytes de uma seção do BootRecord. O parâmetro seção pode deve ser
@@ -138,7 +101,54 @@ class FileSystemManager:
         tamanho_cluster = tamanho_setor*setores_por_cluster
         
         return tamanho_cluster
+
+
+#*******************************************************************************************************
+    def set_setores_por_tabela(self, setores_por_tabela):
+        self.__setores_por_tabela = setores_por_tabela
+        return
+#*******************************************************************************************************#
+    def set_num_entradas_raiz(self, num_entradas_raiz):
+        self.__num_entradas_raiz = num_entradas_raiz
+        return
 #*******************************************************************************************************#  
+    def set_setores_por_cluster(self, setores_por_cluster):
+        self.__setores_por_cluster = setores_por_cluster
+        return
+#*******************************************************************************************************#
+    def set_tamanho_total_particao(self, tamanho):
+        """
+        Define o tamanho total da partição em bytes
+        Garante que o tamanho seja um valor numérico positivo.
+        """
+        if isinstance(tamanho, (int, float)) and tamanho >= 0:
+            self.__tamanho_total_particao = tamanho
+        return
+        
+#*******************************************************************************************************#    
+    def set_bytes_por_setor(self, bytes_por_setor):
+        """
+        retorna o número de bytes por setor
+        """
+
+        self.__bytes_por_setor = bytes_por_setor
+
+        return    
+#*******************************************************************************************************#
+    def set_endereco_particao(self, endereco):
+        """
+        Define o endereço da partição. 
+        Valida se o caminho é uma string e se o arquivo realmente existe.
+        """
+        if isinstance(endereco, str):
+            self.__endereco_particao = endereco
+            return True
+        return False
+
+
+
+
+#*******************************************************************************************************#   
     def ler_input_interface(self, input_string):
         """
         Lê o input da interface do usuário
@@ -279,22 +289,26 @@ class FileSystemManager:
         return
     
     def comando_formatar(self, *args):
-        # Inicialização de variáveis via argumentos
+        """
+        comando_formatar operacionaliza a formatação da partição
+        """
+        # 1. Inicialização de variáveis via argumentos
         endereco_particao    = args[0]
         bytes_por_setor     = int(args[1])
         setores_por_cluster = int(args[2])
         num_entradas_raiz   = int(args[3])
 
-        # Verificar se caminho válido
+        # 2. Verificar se caminho válido
         if not path.exists(endereco_particao):
             erro = ["[sys] - Caminho não encontrado"]
             return erro
         
         try:
-            # Descobrir tamanho da partição em bytes
+            # 3. Descobrir tamanho da partição em bytes
             tamanho_particao = path.getsize(endereco_particao)
 
-            # Calculando setores por tabela
+            # 4. Calculando setores por tabela
+            
             # Setores por tabela = RoundUp(TotalClusters * TamEntradaFAT / BytesPorSetor)
             
             total_clusters = (tamanho_particao / bytes_por_setor) / setores_por_cluster
@@ -304,7 +318,7 @@ class FileSystemManager:
 
             setores_por_tabela = ceil(tamannho_fat_bytes / bytes_por_setor)       
 
-            # Execução da formatação
+            # 5. Execução da formatação
             formatador = Formatador()
             formatador.formatar_completo(
                 endereco_particao, 
@@ -315,7 +329,7 @@ class FileSystemManager:
                 num_entradas_raiz
             )
 
-            # Guardar os novos dados nos atributos privados (Estado do Sistema)
+            # 6. Guardar os novos dados nos atributos privados (Estado do Sistema)
             self.set_bytes_por_setor(bytes_por_setor)
             self.set_setores_por_tabela(setores_por_tabela)
             self.set_setores_por_cluster(setores_por_cluster)
