@@ -85,24 +85,6 @@ class FAT_table_manager:
         # chama o data manager para alocar os clusters no arquivo
         self.data_manager.alocar_cluster(clusters_alocados, arquivo)
         return
-    
-    def procurar_clusters_livre(self, n_clusters):
-        offset_fat = self.file_sys_manager.get_offset("fat")
-        clusters_livres = []
-        total_de_clusters_no_disco = self.file_sys_manager
-        
-        with open(self.file_sys_manager.endereco_particao, 'rb') as f:
-            f.seek(offset_fat)
-            # Varre as entradas da FAT
-            # O índice da entrada é o número do cluster
-            for i in range(total_de_clusters_no_disco):
-                entrada = int.from_bytes(f.read(4), 'little')
-                if entrada == 0x00000000:
-                    clusters_livres.append(i)
-                
-                if len(clusters_livres) == n_clusters:
-                    break
-        return clusters_livres
 
     
     def desalocar_arquivo(primeiro_cluster):
