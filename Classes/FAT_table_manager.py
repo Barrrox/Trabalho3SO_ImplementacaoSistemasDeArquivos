@@ -131,14 +131,43 @@ class FAT_table_manager:
         return entradas
 
     
-    def desalocar_arquivo(primeiro_cluster):
-        # desaloca os clusters de um arquivo alocado na tabela
+    def desalocar_arquivo(self, primeiro_cluster):
+    
         return
 
-    def pegar_clusters_arquivo(primeiro_cluster):
+    def pegar_clusters_arquivo(self, primeiro_cluster):
         # Encontra todos os clusters de um arquivo
         # Retorna: lista com as posições absolutas dos clusters desse arquivo 
-        return
+        # ex : lista = [0x02374033, 0x129347698]
+
+        endereco_particao = self.file_sys_manager.get_endereco_particao()
+        
+        cluster_chain = [primeiro_cluster]
+
+        # abre o storage na posicao do primeiro cluster:
+        with open(endereco_particao, 'r+b') as f:
+            posicao_atual = f.seek(primeiro_cluster)
+            entrada = f.read(4)
+
+            while True: # 
+
+                entrada = f.read(4)
+
+                if entrada != 0xFFFFFFFF and int(entrada) != 0: # se a entrada na FAT nao eh o final do arquivo e nem vazia -> sinaliza o proximo cluster da chain
+
+                    cluster_chain.append(bin(entrada)) # salva o endereço do proximo cluster na lista de retorno
+
+                    posicao_atual = bin(entrada) # salta para o proximo cluster
+                    f.seek(posicao_atual)
+
+                elif entrada == 0xFFFFFFFF: # se a entrada atual for a ultima
+                    return cluster_chain
+
+                else: # se nao caiu em nenhum eh pq tava vazia por algum motivo
+                    error = f"[sys] - Erro na leitura da cluster chain, {cluster_chain[-1]} apontou para uma entrada vazia"
+                    return error 
+
+        return -1
 
 
     def sincronizar_fat_1_2(primeiro_cluster):

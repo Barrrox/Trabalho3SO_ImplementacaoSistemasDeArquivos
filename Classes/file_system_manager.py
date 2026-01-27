@@ -232,9 +232,9 @@ class FileSystemManager:
         # entrada = [atributo, nome, extensao, tamanho, dono, nivel_de_acesso, primeiro_cluster]
         primeiro_cluster = entrada[6]
 
-        self.fat_manager.desalocar_arquivo(primeiro_cluster)
-        self.root_dir_manager.desalocar_entrada(arquivo)
-        self.fat_manager.sincronizar_fat(primeiro_cluster)
+        self.fat_manager.desalocar_arquivo(primeiro_cluster) # desaloca os clusters da tabela fat
+        self.root_dir_manager.desalocar_entrada(arquivo) # marca a entrada como 0x01 no root
+        self.fat_manager.sincronizar_fat(primeiro_cluster) # sincroniza fat 1 com a 2
 
         resultado = [f"arquivo {arquivo} excluido"]
 
@@ -329,7 +329,6 @@ class FileSystemManager:
 
         if self.fat_manager.verificar_espaco_disponivel(tamanho_arquivo): # testa se tem espaço disponível para o arquivo
             
-
             tamanho_cluster = self.get_tamanho_cluster()
 
             quantidade_de_clusters = math.ceil(tamanho_arquivo/tamanho_cluster)       
