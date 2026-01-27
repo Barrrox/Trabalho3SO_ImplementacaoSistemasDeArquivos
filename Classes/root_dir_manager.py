@@ -115,3 +115,25 @@ class root_dir_manager:
         # ignorar entradas com atributo 0x01 (oculto ou excluído)
         # output = [(nome, extensao), (nome, extensao)]
         return
+
+    def procurar_entrada_livre(self):
+        # procura uma entrada disponível no root dir
+        # retorna a posição absoluta dessa entrada
+        offset_root_dir = self.file_sys_manager.get_offset("root_dir")
+        caminho_particao = self.file_sys_manager.get_endereco_particao()
+        num_entradas = self.file_sys_manager.get_num_entradas_raiz()
+
+        with open(caminho_particao, "rb") as f:
+            f.seek(offset_root_dir)
+
+            for _ in range(num_entradas):
+                
+                byte_array = f.read(22)  # Cada entrada tem 22 bytes
+                posicao_atual = f.tell() # salva a posição da entrada sendo lida
+
+                if byte_array[0] == 0x0: # encontrou uma entrada livre
+                    f.seek(posicao_atual - 22)  # Volta para o início da entrada livre # testar
+                    return posicao_atual
+                else: # se não achou uma entrada livre, continua
+                    pass
+            return None
