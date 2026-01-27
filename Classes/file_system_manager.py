@@ -273,12 +273,126 @@ class FileSystemManager:
             2.1 - Se diretório, acionar FLAG
             
         """
+    # args[0] = origem
+    # args[1] = destino
+        caminho_origem = args[0]
+        caminho_destino = args[1]
 
+        # Verifica se caminhos existem
+        if not os.path.exists(caminho_origem):
+            error = ["[sys] - Arquivo de origem não encontrado"]
+            return error
+        
+        if not os.path.exists(caminho_destino):
+            error = ["[sys] - Arquivo de destino não encontrado"]
+            return error
 
-  
-    
+    # 1. TUDO ABAIXO É PARA ARQUIVOS, NÃO SUPORTA DIRETÓRIOS
+
+        # copia EXTERNA: de DENTRO para FORA
+        if self.get_endereco_particao() in args[0]:
+
+            retorno = funcao_copiar_externa(caminho_origem, caminho_destino)
+            return retorno
+
+        # copia INTERNA: de FORA para DENTRO
+        else:
+            funcao_copiar_interna(caminho_origem)
 
         return
+
+    def funcao_copiar_interna(self, caminho_origem):
+        # Pega nome e extensão do arquivo#
+        arquivo_str = caminho_origem.split("/")[-1].lower()
+        nome_arquivo     = arquivo_str.split(".")[0].lower()
+        extensao_arquivo = arquivo_str.split(".")[1].lower()
+    
+        # Le a entrada
+        arquivo_existe = self.root_dir_manager.ler_entrada(nome_arquivo, extensao_arquivo)
+
+        if arquivo_existe:
+            error = ["[sys] - Arquivo já existe no sistema. Operação abortada"]
+            return error
+        
+        tamanho_arquivo = os.path.getsize(caminho_origem)
+
+        
+        #************************************************************# começo da alocação
+
+        if self.fat_manager.verificar_espaco_disponivel(tamanho_arquivo): # testa se tem espaço disponível para o arquivo
+            
+
+            tamanho_cluster = self.get_tamanho_cluster()
+
+            quantidade_de_clusters = math.ceil(tamanho_arquivo/tamanho_cluster)       
+
+            entradas, __Error = self.fat_manager.buscar_entradas_livres(quantidade_de_clusters)
+            
+            if len(entradas) == quantidade_de_clusters: #  se tem entradas o bastante disponíveis
+                
+                entrada_root_dir = self.root_dir_manager.procurar_entrada_livre() # testa se existe uma entrada disponível
+                
+                if entrada_root_dir != None: # se tiver 
+                    entradas = self.fat_manager.alocar_entradas_FAT(tamanho_arquivo)
+                    escrita = self.root_dir_manager.escrever_entrada_arquivo(1, nome_arquivo, extensao_arquivo, tamanho_arquivo, entradas[0], dono=self.get_usuario, nivel_de_acesso=self.get_nivel_permissao)
+                    
+                    if not escrita:
+                        #  escreveu errado, falta tratar
+                        pass
+                    
+                    lista_clusters = []
+                    
+                    for i in entradas:
+                        posicao = self.get_offset("area_dados") + bin(entradas[i] * self.get_tamanho_cluster)
+                        lista_clusters.append(posicao)
+                    
+                    self.data_manager.alocar_cluster(lista_clusters, tamanho_arquivo)
+
+                # verificar se tem espaço disponível no root dir
+
+        else:
+            error = ["[sys] - Não há espaço disponível no sistema. Operação abortada"]
+            return error
+    
+    def funcao_copiar_externa(self, caminho_origem, caminho_destino):
+        """
+        Copia um arquivo ou diretorio de dentro do sistema de arquivos para fora
+
+        Parâmetros:
+            caminho_origem: path absoluto do arquivo dentro do sitema de arquivos
+            caminho_destino: path absoluto do arquivo fora do sistema de arquivos
+
+        Retorna: 
+
+        """
+        
+        # 1. Pegar o arquivo de origem do sistema
+
+        # Pega nome e extensão do arquivo#
+        arquivo_str = caminho_origem.split("/")[-1].lower()
+        nome_arquivo     = arquivo_str.split(".")[0].lower()
+        extensao_arquivo = arquivo_str.split(".")[1].lower()
+
+        # 1.1 Ler entrada no root dir
+        entrada_arquivo = self.root_dir_manager.ler_entrada(nome_arquivo, extensao_arquivo)
+
+        if not entrada_arquivo:
+            erro = ["[sys] - Arquivo de origem não encontrado"]
+            return erro
+
+        # 1.2 Pegar cluster via tabela FAT
+        primeiro_cluster = entrada_arquivo[6]
+        clusters_arquivo = self.fat_manager.pegar_clusters_arquivo(primeiro_cluster)
+
+        # 1.3 ler arquivo via data manager
+        dados_arquivo = self.data_manager.ler_dados(clusters_arquivo)
+        
+        # 2. Copiar buffer para o destino
+        with open(caminho_destino, 'wb') as f:
+            f.write(dados_arquivo)
+
+        return 
+    
 #*******************************************************************************************************#
     def comando_listar(self): # lista os elementos do diretório
         entradas = self.root_dir_manager.listar_entradas()
