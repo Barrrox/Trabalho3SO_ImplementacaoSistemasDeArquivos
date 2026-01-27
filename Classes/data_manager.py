@@ -4,7 +4,7 @@ class data_manager:
         self.disk_manager = file_sys_manager.disk_manager
 
     # aloca o cluster no arquivo via disk_manager
-    # envia a lista de clusters a serem alocados
+    # lista de clusters: contém a posição absoluta dos clusters a serem alocados
     # dados == dados a serem escritos no cluster (deve conter os dados em sequência, isto é, sem separação entre clusters)
     def alocar_cluster(self, lista_clusters, dados):
 
@@ -32,3 +32,11 @@ class data_manager:
     def liberar_cluster():
 
         return
+    
+    def ler_dados(clusters_arquivo):
+        """
+        Lê os dados de um arquivo via disk_manager. Os clusters precisam estar em ordem
+        clusters_arquivo: lista com as posições absolutas dos clusters do arquivo a serem lidos
+        Retorna: dados lidos do arquivo (byte array)"""
+
+        return dados_arquivo
