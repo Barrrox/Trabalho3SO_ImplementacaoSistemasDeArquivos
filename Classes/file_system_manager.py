@@ -1,5 +1,5 @@
-from math import ceil
-from os import path
+import math
+import os
 
 from Classes.FAT_table_manager import FAT_table_manager
 from Classes.disk_manager import disk_manager
@@ -47,18 +47,15 @@ class FileSystemManager:
         retorna o número de entradas do root dir
         """
         return self.__num_entradas_raiz
-#*******************************************************************************************************#
-  
+#*******************************************************************************************************# 
     def get_endereco_particao(self):
         """Retorna o caminho do arquivo .bin atual"""
         return self.__endereco_particao
 #*******************************************************************************************************#    
- 
     def get_tamanho_total_particao(self):
         """Retorna o tamanho total da particao em bytes"""
         return self.__tamanho_total_particao
 #*******************************************************************************************************# 
-
     def get_total_clusters(self):
         """
         Retorna o total de clusters na partição
@@ -71,8 +68,7 @@ class FileSystemManager:
         total_clusters = (tamanho_particao / bytes_por_setor) / setores_por_cluster
 
         return int(total_clusters)
-#    
-
+#*******************************************************************************************************# 
     def get_offset(self, secao):
         """
         Retorna o offset em binario de uma seção do BootRecord. O parâmetro seção pode deve ser
@@ -101,7 +97,6 @@ class FileSystemManager:
         
         else:
             return None
-
 #*******************************************************************************************************#
     def get_tamanho_cluster(self):
         """
@@ -150,8 +145,7 @@ class FileSystemManager:
         """
         if isinstance(tamanho, (int, float)) and tamanho >= 0:
             self.__tamanho_total_particao = tamanho
-        return
-        
+        return    
 #*******************************************************************************************************#    
     def set_bytes_por_setor(self, bytes_por_setor):
         """
@@ -171,7 +165,6 @@ class FileSystemManager:
             self.__endereco_particao = endereco
             return True
         return False
-
 #*******************************************************************************************************#   
     def ler_input_interface(self, input_string):
         """
@@ -222,7 +215,6 @@ class FileSystemManager:
             return {"rodou?": True, "comando" : "exemplo2", "dados" : 1, "msg_erro": None}
         else:
             return {"rodou?": False, "comando" : "exemplo2", "dados" : None, "msg_erro": "Não digitou 1"}
-
 #*******************************************************************************************************#   
     # deletar nome_arqv
     def comando_deletar(self, *args):
@@ -444,13 +436,13 @@ class FileSystemManager:
         num_entradas_raiz   = int(args[3])
 
         # 2. Verificar se caminho válido
-        if not path.exists(endereco_particao):
+        if not os.path.exists(endereco_particao):
             erro = ["[sys] - Caminho não encontrado"]
             return erro
         
         try:
             # 3. Descobrir tamanho da partição em bytes
-            tamanho_particao = path.getsize(endereco_particao)
+            tamanho_particao = os.path.getsize(endereco_particao)
 
             # 4. Calculando setores por tabela
             
@@ -459,9 +451,9 @@ class FileSystemManager:
             total_clusters = self.get_total_clusters()
             bytes_por_entrada = 32 / 4 # 32 bits de entrada FAT -> 4 bytes
 
-            tamannho_fat_bytes = total_clusters * ceil(bytes_por_entrada)
+            tamannho_fat_bytes = total_clusters * math.ceil(bytes_por_entrada)
 
-            setores_por_tabela = ceil(tamannho_fat_bytes / bytes_por_setor)       
+            setores_por_tabela = math.ceil(tamannho_fat_bytes / bytes_por_setor)       
 
             # 5. Execução da formatação
             formatador = Formatador()
