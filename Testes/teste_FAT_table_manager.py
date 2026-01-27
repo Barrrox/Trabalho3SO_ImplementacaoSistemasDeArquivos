@@ -34,7 +34,7 @@ class TestRootDirManager(unittest.TestCase):
         offset_fat = self.fsm.get_offset("fat1")
 
         with open(self.caminho_particao, "rb+") as f:
-            f.seek(offset_fat)
+            f.seek(offset_fat + 4) # Pula entrada reservada 0
             
             total_clusters = self.fsm.get_total_clusters()
 
@@ -75,7 +75,7 @@ class TestRootDirManager(unittest.TestCase):
 
         # 2. Busca entradas livres
         
-        retorno_esperado = ([11, 12, 13, 15], None)
+        retorno_esperado = ([10, 11, 12, 14], None)
 
         retorno_real = self.fsm.fat_manager.buscar_entradas_livres(4)
 
