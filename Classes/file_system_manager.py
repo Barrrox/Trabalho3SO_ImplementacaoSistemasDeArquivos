@@ -11,15 +11,22 @@ class FileSystemManager:
     
     def __init__(self):
     # Inicializa os atributos do Boot Record
-    # self._<atributo> representa um atributo PRIVATE  
+    # self._<atributo> representa um atributo PRIVATE  # FIX: Ajustar pra ler do formator
+       
+       # valores fixos
         self.__bytes_por_setor     = 512    # 2 bytes
         self.__setores_por_tabela  = 131072 # 4 bytes
+        
+        # valores variáveis
         self.__setores_por_cluster = 8      # 1 byte
         self.__num_entradas_raiz   = 512    # 2 bytes
         self.__endereco_particao = None
         self.__tamanho_total_particao = 0
         self.__usuario = None
   
+
+        self.file_system_manager.get
+
         # Inicializa os managers que não tem dependências primeiro
         self.root_dir_manager = root_dir_manager(self)
         self.disk_manager = disk_manager(self)
