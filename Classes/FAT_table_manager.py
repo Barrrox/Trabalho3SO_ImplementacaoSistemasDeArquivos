@@ -132,8 +132,30 @@ class FAT_table_manager:
 
     
     def desalocar_arquivo(self, primeiro_cluster):
-    
-        return
+        # desaloca os clusters de um arquivo alocado na tabela
+        endereco_particao = self.file_sys_manager.get_endereco_particao()
+        offset_fat = self.file_sys_manager.get_offset("fat1")
+
+        livre = 0x00000000
+        fim = 0xFFFFFFFF
+
+        cluster_atual = primeiro_cluster
+        with open(endereco_particao, 'r+b') as file:
+            while True:
+                posicao = offset_fat + (cluster_atual * 4) # Entrada de 4bytes
+                file.seek(posicao) # posiciona o cursor na entrada
+
+                proximo_cluster = int.from_bytes(file.read(4), 'little') # lê os bytes da posição (littlend) e transforma pra inteiro
+
+                file.seek(posicao) # volta para a posicao do cluster
+                file.write(livre.to_bytes(4, 'little')) # redefine o cluster para livre
+
+                if proximo_cluster == fim: # cluster = EOF
+                    break
+
+                cluster_atual = proximo_cluster
+        
+        return -1
 
     def pegar_clusters_arquivo(self, primeiro_cluster):
         # Encontra todos os clusters de um arquivo
@@ -170,6 +192,20 @@ class FAT_table_manager:
         return -1
 
 
-    def sincronizar_fat_1_2(primeiro_cluster):
+    def sincronizar_fat_1_2(self):
         # Sincroniza as tabelas FAT
+        endereco_particao = self.file_sys_manager.get_endereco_particao()
+
+        offset_fat1 = self.file_sys_manager.get_offset("fat1")
+        offset_fat2 = self.file_sys_manager.get_offset("fat2")
+        bytesPorSetor = self.file_sys_manager.get_bytes_por_setor()
+        setoresPorTabela = self.file_sys_manager.get_setores_por_tabela()
+        size = bytesPorSetor * setoresPorTabela # calcula o tamanho da tabela fat
+
+        with open(endereco_particao, 'r+b') as file:
+            file.seek(offset_fat1)
+            dados = file.read(size) # copia os dados da fat 1
+
+            file.seek(offset_fat2) 
+            file.write(dados) # cola os dados na fat 2
         return
