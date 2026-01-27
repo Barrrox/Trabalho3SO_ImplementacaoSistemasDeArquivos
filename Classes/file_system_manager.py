@@ -56,11 +56,25 @@ class FileSystemManager:
     def get_tamanho_total_particao(self):
         """Retorna o tamanho total da particao em bytes"""
         return self.__tamanho_total_particao
-#*******************************************************************************************************#    
+#*******************************************************************************************************# 
+
+    def get_total_clusters(self):
+        """
+        Retorna o total de clusters na partição
+        """
+
+        tamanho_particao = self.get_tamanho_total_particao()
+        bytes_por_setor = self.get_bytes_por_setor()
+        setores_por_cluster = self.get_setores_por_cluster()
+
+        total_clusters = (tamanho_particao / bytes_por_setor) / setores_por_cluster
+
+        return int(total_clusters)
+#    
 
     def get_offset(self, secao):
         """
-        Retorna o offset (inteiro) em bytes de uma seção do BootRecord. O parâmetro seção pode deve ser
+        Retorna o offset (int) em bytes de uma seção do BootRecord. O parâmetro seção pode deve ser
         uma das seguintes strings: "boot_record", "fat1", "fat2", "root_dir", "area_dados"
         """
         bytes_setor = self.get_bytes_por_setor()
@@ -71,7 +85,7 @@ class FileSystemManager:
         if secao == "boot_record":
             return 0
         
-        elif secao == "fat":
+        elif secao == "fat1":
             return bytes_setor  # offset boot record
         
         elif secao == "fat2":
@@ -312,7 +326,7 @@ class FileSystemManager:
             
             # Setores por tabela = RoundUp(TotalClusters * TamEntradaFAT / BytesPorSetor)
             
-            total_clusters = (tamanho_particao / bytes_por_setor) / setores_por_cluster
+            total_clusters = self.get_total_clusters()
             bytes_por_entrada = 32 / 4 # 32 bits de entrada FAT -> 4 bytes
 
             tamannho_fat_bytes = total_clusters * ceil(bytes_por_entrada)
