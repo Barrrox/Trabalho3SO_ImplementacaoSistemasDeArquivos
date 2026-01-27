@@ -70,7 +70,6 @@ class root_dir_manager:
 
         return True # escreveu com sucesso            
 
-
     def ler_entrada(self, nome_arquivo : str, extensao_arquivo : str):
         """
         Procura e retorna os atributos de uma entrada. Retorno:
