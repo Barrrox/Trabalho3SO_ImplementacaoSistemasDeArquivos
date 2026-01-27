@@ -16,7 +16,9 @@ class root_dir_manager:
 
     def ler_entrada(self, nome_arquivo : str, extensao_arquivo : str):
         """
-        Procura e retorna os atributos de uma entrada
+        Procura e retorna os atributos de uma entrada. Retorno:
+        
+        [atributo, nome, extensao, tamanho, dono, nivel_acesso, primeiro_cluster]
         """
         # 1. Pega infos necessarias do file sys manager
         offset_root_dir = self.file_sys_manager.get_offset("root_dir")
