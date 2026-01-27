@@ -307,16 +307,27 @@ class FileSystemManager:
         # copia EXTERNA: de DENTRO para FORA
         if self.get_endereco_particao() in args[0]:
 
-            retorno = funcao_copiar_externa(caminho_origem, caminho_destino)
+            retorno = self.funcao_copiar_externa(caminho_origem, caminho_destino)
             return retorno
 
         # copia INTERNA: de FORA para DENTRO
         else:
-            funcao_copiar_interna(caminho_origem)
+            self.funcao_copiar_interna(caminho_origem)
 
         return
 
     def funcao_copiar_interna(self, caminho_origem):
+        """
+        Copia um arquivo ou diretorio de fora do sistema de arquivos(SO) para dentro
+
+        Parâmetros:
+            caminho_origem: path absoluto do arquivo dentro do SO
+
+
+        Retorna: 
+
+        """
+
         # Pega nome e extensão do arquivo#
         arquivo_str = caminho_origem.split("/")[-1].lower()
         nome_arquivo     = arquivo_str.split(".")[0].lower()
