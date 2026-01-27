@@ -9,24 +9,21 @@ class disk_manager:
         setores_por_cluster = self.file_sys_manager.get_setores_por_cluster()
 
         cluster_em_bytes = setores_por_cluster * tamanho_setor
-
-    # posicao == posição absoluta em bytes no arquivo
-    # dados == tamanho em clusters do conjunto de dados a ser lido naquela posição
-    # retorna uma lista com os dados lidos, cada posição da lista é 1 setor (512 bytes)
-    def ler_setor(self, posicao, dados):
+ 
+    def ler_setor(self, posicao):
+        """
+        Docstring for ler_setor
+        
+        :param posicao: Posição para iniciar a leitura do setor
+        :return: string com os dados lidos
+        """
 
         endereco_particao = self.file_sys_manager.get_endereco_particao()
-
-        dados *= self.cluster_em_bytes
-        leituras = math.ceil(dados / self.tamanho_setor)
-
-        lido = []
 
         with open(endereco_particao, 'r+b') as f:
             f.seek(posicao)
 
-            for i in range(leituras):
-                lido.append(f.read(self.tamanho_setor))  # lê 512 bytes (1 setor) # talvez acessar uma variavel da classe a cada leitura cause lentidão, não sei
+            lido = (f.read(self.tamanho_setor))  # lê 1 setor # talvez acessar uma variavel da classe a cada leitura cause lentidão, não sei
         
         return lido
 
