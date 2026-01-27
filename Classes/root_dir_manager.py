@@ -109,10 +109,44 @@ class root_dir_manager:
                                 
         return None
     
-    def listar_entradas():
+    def listar_entradas(self):
         # lista todas as entradas do diretório
         # ignorar entradas com atributo 0x01 (oculto ou excluído)
-        # output = [(nome, extensao), (nome, extensao)]
+        # output = [(nome, extensao, "arquivo" or "diretorio" ), (nome, extensao, "arquivo" or "diretorio")]
+
+        offset_root_dir = self.file_sys_manager.get_offset("root_dir")
+        caminho_particao = self.file_sys_manager.get_endereco_particao()
+        num_entradas = self.file_sys_manager.get_num_entradas_raiz()
+
+        lista_retorno = []
+        
+        with open(caminho_particao, "rb") as f:
+            f.seek(offset_root_dir)
+
+            for _ in range(num_entradas):
+
+                entrada_buffer = f.read(22) # Cada entrada tem 22 bytes
+
+                if entrada_buffer[0] == 0x00 or entrada_buffer[0] == 0x01: # se for uma entrada vazia ou oculta/deletada
+                    continue
+                
+                else:
+                    # Decodifica Nome e Extensão
+                    nome = entrada_buffer[1:9].decode('utf-8').strip().lower()
+                    extensao = entrada_buffer[9:12].decode('utf-8').strip().lower()
+                    
+                    if entrada_buffer[0] == bin(2):
+                        tipo = "arquivo"
+                    else: 
+                        tipo = "diretório"
+
+                    entrada = (nome, extensao, tipo)
+                    lista_retorno.append(entrada)
+                    
+        return lista_retorno
+                    
+
+
         return
 
     def procurar_entrada_livre(self):
