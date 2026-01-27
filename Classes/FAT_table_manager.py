@@ -85,7 +85,7 @@ class FAT_table_manager:
 
     def alocar_entradas_FAT(self, tamanho_arquivo) :
         """
-        tamanho_arquivo: tamanho do arquivo a ser alocado
+        tamanho_arquivo: tamanho em bytes do arquivo a ser alocado
         
         """
         endereco_particao = self.file_sys_manager.get_endereco_particao()
@@ -126,7 +126,7 @@ class FAT_table_manager:
                         
                         f.write(posicao_prox_cluster)
         else:
-            return print("Não há clusters livres suficientes para alocar o arquivo.")
+            return False
                         
         return entradas
 
@@ -135,9 +135,11 @@ class FAT_table_manager:
         # desaloca os clusters de um arquivo alocado na tabela
         return
 
-    def pegar_proximo_cluster():
-        # Encontra o proximo cluster de uma chain     
+    def pegar_clusters_arquivo(primeiro_cluster):
+        # Encontra todos os clusters de um arquivo
+        # Retorna: lista com as posições absolutas dos clusters desse arquivo 
         return
+
 
     def sincronizar_fat_1_2(primeiro_cluster):
         # Sincroniza as tabelas FAT
