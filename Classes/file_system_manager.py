@@ -18,6 +18,7 @@ class FileSystemManager:
         self.__num_entradas_raiz   = 512    # 2 bytes
         self.__endereco_particao = None
         self.__tamanho_total_particao = 0
+        self.__usuario = None
   
         # Inicializa os managers que não tem dependências primeiro
         self.root_dir_manager = root_dir_manager(self)
@@ -113,7 +114,22 @@ class FileSystemManager:
         tamanho_cluster = tamanho_setor*setores_por_cluster
         
         return tamanho_cluster
+#*******************************************************************************************************#
+    def get_usuario(self):
+        """Retorna o usuario atual do sistema"""
+        return self.__usuario
+#*******************************************************************************************************#
+    def get_nivel_permissao(self):
 
+        usuario = self.get_usuario()
+
+        if usuario == "admin" or usuario == "administrador":
+            return 1
+        else:
+            return 0
+#*******************************************************************************************************#
+    def set_usuario(self, usuario):
+        self.__usuario = usuario
 #*******************************************************************************************************
     def set_setores_por_tabela(self, setores_por_tabela):
         self.__setores_por_tabela = setores_por_tabela
