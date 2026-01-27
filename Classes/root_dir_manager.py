@@ -70,11 +70,15 @@ class root_dir_manager:
 
         return True # escreveu com sucesso            
 
-    def ler_entrada(self, nome_arquivo : str, extensao_arquivo : str):
+    def escrever_entrada_diretorio(self, atributo, nome : str, primeiro_cluster, dono = None, nivel_de_acesso = None): 
+
+        return
+
+    def ler_entrada(self, nome_arquivo : str, extensao_arquivo : str = None):
         """
         Procura e retorna os atributos de uma entrada. Retorno:
         
-        [atributo, nome, extensao, tamanho, dono, nivel_acesso, primeiro_cluster]
+        [atributo, nome, extensao caso arquivo, tamanho, dono, nivel_acesso, primeiro_cluster]
         """
         # 1. Pega infos necessarias do file sys manager
         offset_root_dir = self.file_sys_manager.get_offset("root_dir")
@@ -94,9 +98,15 @@ class root_dir_manager:
                 if entrada_buffer[0] == 0x00 or entrada_buffer[0] == 0x01:
                     continue
 
-                # Decodifica apenas campos que são strings (Nome e Extensão)
-                nome = entrada_buffer[1:9].decode('utf-8').strip().lower()
-                extensao = entrada_buffer[9:12].decode('utf-8').strip().lower()
+                if extensao == None: # é um arquivo
+                    # Decodifica apenas campos que são strings (Nome e Extensão)
+                    nome = entrada_buffer[1:9].decode('utf-8').strip().lower()
+                    extensao = entrada_buffer[9:12].decode('utf-8').strip().lower()
+               
+                else: # é um diretório
+                    # Decodifica apenas o campo nome, diretório não tem extensão
+                    nome = entrada_buffer[1:9].decode('utf-8').strip().lower()
+                    extensao = None
 
                 if nome == nome_arquivo.lower() and extensao == extensao_arquivo.lower():
                     atributo = entrada_buffer[0:1] # Mantém como byte ou converte para int
@@ -105,7 +115,7 @@ class root_dir_manager:
                     nivel_acesso = int.from_bytes(entrada_buffer[18:20], 'little')
                     primeiro_cluster = int.from_bytes(entrada_buffer[20:22], 'little')
                     
-                    return [atributo, nome, extensao, tamanho, dono, nivel_acesso, primeiro_cluster]
+                    return [atributo, nome, extensao, tamanho, dono, nivel_acesso, primeiro_cluster]          
                                 
         return None
     
@@ -145,7 +155,7 @@ class root_dir_manager:
                     
         return lista_retorno
                     
-
+    def  listar_diretorio(self, nome):
 
         return
 
@@ -170,3 +180,9 @@ class root_dir_manager:
                 else: # se não achou uma entrada livre, continua
                     pass
             return None
+
+    def desalocar_entrada(self, primeiro_cluster):
+        offset_root_dir = self.file_sys_manager.get_offset("root_dir")
+        caminho_particao = self.file_sys_manager.get_endereco_particao()
+        num
+        return
