@@ -75,29 +75,29 @@ class FileSystemManager:
 
     def get_offset(self, secao):
         """
-        Retorna o offset (int) em bytes de uma seção do BootRecord. O parâmetro seção pode deve ser
+        Retorna o offset em binario de uma seção do BootRecord. O parâmetro seção pode deve ser
         uma das seguintes strings: "boot_record", "fat1", "fat2", "root_dir", "area_dados"
         """
         bytes_setor = self.get_bytes_por_setor()
         setores_por_tabela = self.get_setores_por_tabela()
         numero_entradas_raiz = self.get_num_entradas_raiz()
-        tamanho_entrada = 22  # tamanho de cada entrada em bytes
+        tamanho_entrada_root_dir = 22  # tamanho de cada entrada em bytes
 
         if secao == "boot_record":
-            return 0
+            return bin(0)
         
         elif secao == "fat1":
-            return bytes_setor  # offset boot record
+            return bin(bytes_setor)  # offset boot record
         
         elif secao == "fat2":
-            return bytes_setor + (setores_por_tabela * bytes_setor)  # offset boot record + tabela FAT 1
+            return bin(bytes_setor + (setores_por_tabela * bytes_setor))  # offset boot record + tabela FAT 1
         
         elif secao == "root_dir":
-            return bytes_setor + ( (setores_por_tabela * bytes_setor) * 2)  # offset boot record + 2 tabelas FAT
+            return bin(bytes_setor + ( (setores_por_tabela * bytes_setor) * 2))  # offset boot record + 2 tabelas FAT
         
         elif secao == "area_dados":
-            return (bytes_setor + ( (setores_por_tabela * bytes_setor) * 2) +
-                    (numero_entradas_raiz * tamanho_entrada))  # offset root dir + tamanho root dir
+            return bin((bytes_setor + ( (setores_por_tabela * bytes_setor) * 2) +
+                    (numero_entradas_raiz * tamanho_entrada_root_dir)))  # offset root dir + tamanho root dir
         
         else:
             return None
