@@ -50,7 +50,9 @@ class FAT_table_manager:
         
         entradas = []
         with open(endereco_particao, 'rb') as f:
-            f.seek(offset_fat)
+            
+            # Começa da entrada 1, ignorando a entrada reservada 0
+            f.seek(offset_fat + 4)
 
             total_clusters = self.file_sys_manager.get_total_clusters()
 
