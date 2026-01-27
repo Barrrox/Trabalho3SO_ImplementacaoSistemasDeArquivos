@@ -34,7 +34,7 @@ class FAT_table_manager:
 
     def buscar_entradas_livres(self, numero_entradas): # pega a posição relativa de uma entrada FAT livre
         """
-        Procura entradas livres no arquivo e retorna suas posições relativas
+        Procura entradas livres na partição e retorna suas posições relativas
 
         Parâmetros:
             numero_entradas: número de entradas requeridas
@@ -49,22 +49,33 @@ class FAT_table_manager:
         offset_fat = self.file_sys_manager.get_offset("fat1")
         
         entradas = []
-        with open(endereco_particao, 'r+b') as f:
-            f.seek(offset_fat)
+        with open(endereco_particao, 'rb') as f:
+            
+            # Começa da entrada 1, ignorando a entrada reservada 0
+            f.seek(offset_fat + 4)
 
-            posicao = 0
-         
-            # loop começando em 1 para ignorar a entrada 0 (reservada)        
-            for i in range(1, numero_entradas+1):
-                f.seek(posicao)
-                entrada_bytes = f.read(4)  # Lê 4 bytes (32 bits) da entrada FAT
+            total_clusters = self.file_sys_manager.get_total_clusters()
+
+
+            contador_entradas = 0 # contador para entradas livres encontradas
+            i = 1 # Começa em 1 para pular a entrada reservada 0         
+            # loop para ler todas as entradas FAT
+            while i < total_clusters and contador_entradas < numero_entradas:
+
+                # Lê 1 entrada (4 bytes)
+                entrada_bytes = f.read(4) 
+
+                # Tranforma pra inteiro
+                entrada_int = int.from_bytes(entrada_bytes, 'little')
                 
-                # Se entrada ocupada
-                if entrada_bytes != 0x00000000:                   
-                    
-                    pass # Entrada ocupada, continua procurando
-                else:
+                # Entrada livre, marcar
+                if entrada_int == 0:                
                     entradas.append(i)  # Adiciona a posição da entrada livre à lista
+                    contador_entradas += 1
+                    
+                # incrementa
+                i+=1
+
 
         if len(entradas) < numero_entradas:
             __Error = "Não há entradas FAT livres suficientes."
