@@ -5,68 +5,43 @@ class root_dir_manager:
 
         self.file_sys_manager = file_sys_manager
 
-    def escrever_entrada_arquivo(self, atributo, nome : str, extensao : str, tamanho, primeiro_cluster, dono = None, nivel_de_acesso = None):        
+    def escrever_entrada_arquivo(self, atributo, nome : str, extensao : str, tamanho, primeiro_cluster, dono = 0, nivel_de_acesso = 0):        
         
+        # 1. Verificações iniciais
+
         # verificação se o arquiivo já existe
         entrada_existente = self.ler_entrada(nome, extensao)
         if entrada_existente is not None:
-            raise Exception("Erro: Entrada com o mesmo nome e extensão já existe.")
+            return ("[sys] - Entrada com o mesmo nome e extensão já existe.")
         
         
-        # Verificação prévia de adequação ao sistema
+        # Verificação de tamanhos
         if tamanho > (2**32 -1):
-            raise Exception("Erro: Tamanho do arquivo excede o limite máximo de 4GB.")
+            return ("[sys] - Tamanho do arquivo excede o limite máximo de 4GB.")
         if len(nome) > 8:
-            raise Exception("Erro: Nome do arquivo excede o limite máximo de 8 caracteres.")
+            return ("[sys] - Nome do arquivo excede o limite máximo de 8 caracteres.")
         if len(extensao) > 3:
-            raise Exception("Erro: Extensão do arquivo excede o limite máximo de 3 caracteres.")
+            return ("[sys] - Extensão do arquivo excede o limite máximo de 3 caracteres.")
 
+        # 2. Procura uma entrada livre
+        pos_entrada_livre = self.procurar_entrada_livre()
+
+        if pos_entrada_livre is None:
+            return ("[sys] - Não há entradas livres disponíveis no diretório raiz")
         
-        offset_root_dir = self.file_sys_manager.get_offset("root_dir")
         caminho_particao = self.file_sys_manager.get_endereco_particao()
-        num_entradas = self.file_sys_manager.get_num_entradas_raiz()
 
-
+        # 3. Escreve a entrada
         with open(caminho_particao, "r+b") as f:
-            f.seek(offset_root_dir)
+            f.seek(pos_entrada_livre)
 
-            # Encontrar a primeira entrada livre (atributo 0x00 ou 0x01)
-
-            for _ in range(num_entradas):
-                
-                byte_array = f.read(22)  # Cada entrada tem 22 bytes
-                
-                posicao_atual = f.tell() # salva a posição da entrada sendo lida
-                checkar_leitura = posicao_atual
-
-                if byte_array[0] == 0x0: # encontrou uma entrada livre
-                    f.seek(posicao_atual - 22)  # Volta para o início da entrada livre # testar
-                    # Prepara os dados para escrita
-        
-                    atributo_bytes     = atributo.to_bytes(1, 'little')               
-                    nome_binario       = ' '.join('{0:08b}'.format(ord(x), 'b') for x in nome)
-                    extensao_binario   = ' '.join('{0:08b}'.format(ord(x), 'b') for x in extensao)
-                    tamanho_bytes      = tamanho.to_bytes(4, 'little')
-                    dono_bytes         = dono.to_bytes(1, 'little')
-                    nivel_acesso_bytes = nivel_de_acesso.to_bytes(1, 'little')
-                #   primeiro_cluster já deve estar em binário (posição absoluta)
-
-                    # Escreve os dados na entrada livre
-                    f.write(atributo_bytes)
-                    f.write(nome_binario)
-                    f.write(extensao_binario)
-                    f.write(tamanho_bytes)
-                    f.write(dono_bytes)
-                    f.write(nivel_acesso_bytes)
-                    f.write(primeiro_cluster)  
-
-                    if f.tell() != checkar_leitura: # algo deu errado na escrita # tratar a exclusao de tudo relacionado ao arquivo
-                        self.file_sys_manager.tratar_erros.tratar_erro_escrita_entrada_root_dir(nome, extensao) # tentar apagar a entrada escrita
-                        
-                    else:
-                        break # escrita deu certo, sai do loop
-                else:
-                    continue # continua procurando uma entrada livre
+            f.write(atributo.to_bytes(1, 'little'))
+            f.write(nome.encode('utf-8').ljust(8, b' '))  # Preenche com espaços até 8 bytes
+            f.write(extensao.encode('utf-8').ljust(3, b' '))  # Preenche com espaços até 3 bytes
+            f.write(tamanho.to_bytes(4, 'little'))
+            f.write(dono.to_bytes(1, 'little'))
+            f.write(nivel_de_acesso.to_bytes(1, 'little'))
+            f.write(primeiro_cluster.to_bytes(4, 'little')) 
 
         return True # escreveu com sucesso            
 
@@ -162,6 +137,10 @@ class root_dir_manager:
         return
 
     def procurar_entrada_livre(self):
+        """
+        Procura e retorna a posição absoluta da primeira entrada livre no root dir
+        Retorna None se não houver
+        """
         # procura uma entrada disponível no root dir
         # retorna a posição absoluta dessa entrada
         offset_root_dir = self.file_sys_manager.get_offset("root_dir")
