@@ -27,6 +27,9 @@ class TestRootDirManager(unittest.TestCase):
 
     # Sem entradas FAT suficientes
     def test_buscar_entradas_livres_falha(self):
+        """
+        Testa o retorno quando não há entradas livres
+        """
 
         # 1. Preencher FAT com entradas mock
 
@@ -53,8 +56,8 @@ class TestRootDirManager(unittest.TestCase):
     # Tem entradas suficientes
     def test_buscar_entradas_livres_sucesso(self):
         """
-        Preenche os clusters de 1 a 9 e o cluster 14.
-        Deve retornar os clusters livres: 10, 11, 12, 15
+        Testa a busca de entradas quando já há algumas entradas preenchidas
+        Deve retornar os clusters livres: 11, 12, 13, 15
         """
 
         # 1. Preencher FAT com entradas mock
@@ -149,23 +152,12 @@ class TestRootDirManager(unittest.TestCase):
 
     def test_alocar_entradas_FAT_sem_espaco(self):
         """Testa o comportamento quando o disco está cheio."""
-        # Tenta alocar um tamanho absurdamente maior que os 10MB do setUp
-        resultado = self.fsm.fat_manager.alocar_entradas_FAT(1024 * 1024 * 100)
+        # Tenta alocar um tamanho maior que o tamanho do teste
+        
+        resultado = self.fsm.fat_manager.alocar_entradas_FAT(self.tamanho_teste + 100)
         
         # Deve retornar False conforme definido no manager
         self.assertFalse(resultado)
 
-# Testes verificar espaco:
-    # arquivo menor que o setor
-    # arquivo maior que o setor
-    # arquivo com um cluster
-    # arquivo com mais de um cluster
-    # arquivo maior que o espaço disponivel        
-
-    # def test_verificar_espaco_disponivel_falha(self):
-
-    #     retorno_esparado = False
-        
-    #     retorno = self.fat_table_manager.verificar_espaco_disponivel(1024*1024*100) # 100 MB
-
+    
 
