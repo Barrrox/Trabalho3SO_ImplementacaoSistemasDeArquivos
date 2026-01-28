@@ -111,9 +111,9 @@ class root_dir_manager:
                 if nome == nome_busca and extensao == ext_busca:
                     atributo = entrada_buffer[0:1] # Mantém como byte ou converte para int
                     tamanho = int.from_bytes(entrada_buffer[12:16], 'little')
-                    dono = int.from_bytes(entrada_buffer[16:18], 'little')
-                    nivel_acesso = int.from_bytes(entrada_buffer[18:20], 'little')
-                    primeiro_cluster = int.from_bytes(entrada_buffer[20:22], 'little')
+                    dono = int.from_bytes(entrada_buffer[16:17], 'little')
+                    nivel_acesso = int.from_bytes(entrada_buffer[17:18], 'little')
+                    primeiro_cluster = int.from_bytes(entrada_buffer[18:22], 'little')
                     
                     return [atributo, nome, extensao, tamanho, dono, nivel_acesso, primeiro_cluster]  
             else:
