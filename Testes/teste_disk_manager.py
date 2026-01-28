@@ -10,7 +10,7 @@ class TestDiskManager(unittest.TestCase):
         
         # 2. Configura o arquivo de disco virtual para os testes
         self.caminho_particao = "disco_teste_disk.bin"
-        self.tamanho_teste = 1024 * 1024 # 1 MB
+        self.tamanho_teste = 1024 * 1024 *100 # 100 MB
         
         # Cria o arquivo binário zerado
         with open(self.caminho_particao, 'wb') as f:

@@ -10,10 +10,12 @@ class TestRootDirManager(unittest.TestCase):
         
         # 2. Configura o arquivo de disco virtual real
         self.caminho_particao = "disco_teste_root.bin"
-        self.tamanho_teste = 1024 * 1024 # 1 MB
+        self.tamanho_teste = 1024 * 1024 * 100 # 100 MB
+        # self.tamanho_teste = 1024 * 1024 * 1024 # 1 GB
         
         with open(self.caminho_particao, 'wb') as f:
-            f.truncate(self.tamanho_teste)
+            f.seek(self.tamanho_teste)
+            f.write(b'\x00')
 
         # 3. Formata para garantir Boot Record e offsets corretos
         # 512 bytes/setor, 8 setores/cluster, 512 entradas no Root Dir

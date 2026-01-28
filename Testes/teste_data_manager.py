@@ -9,8 +9,8 @@ class TestFatTableManager(unittest.TestCase):
         self.fsm = FileSystemManager()
         
         self.caminho_particao = "disco_teste_root_dir.bin"
-        self.tamanho_teste = 1024 * 1024 * 10 # 10 MB
-        # self.tamanho_teste = 1024 * 1024 * 1024 * 4 # 4 GB
+        self.tamanho_teste = 1024 * 1024 * 100 # 100 MB
+        # self.tamanho_teste = 1024 * 1024 * 1024 # 1 GB
 
         with open(self.caminho_particao, 'wb') as f:
             f.seek(self.tamanho_teste - 1)

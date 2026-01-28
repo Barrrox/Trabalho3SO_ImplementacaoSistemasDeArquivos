@@ -14,7 +14,8 @@ class TesteZerar(unittest.TestCase):
         """
         self.formatador = Formatador()
         self.caminho_teste = "disco_teste_zerar.bin"
-        self.tamanho_teste = 1024 * 1024 # 1 MB
+        self.tamanho_teste = 1024 * 1024 * 100 # 100 MB
+        # self.tamanho_teste = 1024 * 1024 * 512 # 500 MB
 
         with open(self.caminho_teste, "wb") as f:
             f.write(b"A" * self.tamanho_teste) # Escrever dados aleatorios
