@@ -87,20 +87,20 @@ class FileSystemManager:
         tamanho_entrada_root_dir = 22  # tamanho de cada entrada em bytes
 
         if secao == "boot_record":
-            return bin(0)
+            return 0
         
         elif secao == "fat1":
-            return bin(bytes_setor)  # offset boot record
+            return bytes_setor  # offset boot record
         
         elif secao == "fat2":
-            return bin(bytes_setor + (setores_por_tabela * bytes_setor))  # offset boot record + tabela FAT 1
+            return bytes_setor + (setores_por_tabela * bytes_setor)  # offset boot record + tabela FAT 1
         
         elif secao == "root_dir":
-            return bin(bytes_setor + ( (setores_por_tabela * bytes_setor) * 2))  # offset boot record + 2 tabelas FAT
+            return bytes_setor + ( (setores_por_tabela * bytes_setor) * 2) # offset boot record + 2 tabelas FAT
         
         elif secao == "area_dados":
-            return bin((bytes_setor + ( (setores_por_tabela * bytes_setor) * 2) +
-                    (numero_entradas_raiz * tamanho_entrada_root_dir)))  # offset root dir + tamanho root dir
+            return (bytes_setor + ( (setores_por_tabela * bytes_setor) * 2) +
+                    (numero_entradas_raiz * tamanho_entrada_root_dir))  # offset root dir + tamanho root dir
         
         else:
             return None
