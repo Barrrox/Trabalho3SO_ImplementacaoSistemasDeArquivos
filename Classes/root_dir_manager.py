@@ -181,8 +181,27 @@ class root_dir_manager:
                     pass
             return None
 
-    def desalocar_entrada(self, primeiro_cluster):
+    def desalocar_entrada_arquivo(self, nome_arquivo):
         offset_root_dir = self.file_sys_manager.get_offset("root_dir")
         caminho_particao = self.file_sys_manager.get_endereco_particao()
-        num
-        return
+        num_entradas = self.file_sys_manager.get_num_entradas_raiz()
+
+        with open(caminho_particao, "r+b") as file:
+            file.seek(offset_root_dir)
+
+            for _ in range(num_entradas):
+                posicao_inicial = file.tell() # salva a posição da entrada sendo lida
+                entrada = file.read(22)  # Cada entrada tem 22 bytes
+
+                if entrada[0] == 0x0 or entrada[0] == 0x1: # ignora entradas excluidas ou sem conteudo
+                    continue
+
+                # Decodifica Nome e Extensão
+                nome = entrada[1:9].decode('utf-8').strip().lower()
+
+                if nome_arquivo == nome:
+                    file.seek(posicao_inicial)
+                    file.write((0x01).to_bytes(1, 'little'))
+                    return True
+        
+        return False
