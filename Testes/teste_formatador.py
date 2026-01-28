@@ -12,10 +12,10 @@ class TesteZerar(unittest.TestCase):
         de zeros, não estariamos testando realmente se a função está funcionando. 
         Então criamos um arquivo mock para simular a partição que será excluido depois
         """
+
         self.formatador = Formatador()
         self.caminho_teste = "disco_teste_zerar.bin"
-        self.tamanho_teste = 1024 * 1024 * 100 # 100 MB
-        # self.tamanho_teste = 1024 * 1024 * 512 # 500 MB
+        self.tamanho_teste = 1024 * 1024 * 10 # 10 MB
 
         with open(self.caminho_teste, "wb") as f:
             f.write(b"A" * self.tamanho_teste) # Escrever dados aleatorios
