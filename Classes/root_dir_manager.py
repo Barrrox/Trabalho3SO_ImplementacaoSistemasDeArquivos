@@ -152,11 +152,10 @@ class root_dir_manager:
 
             for _ in range(num_entradas):
                 
-                byte_array = f.read(22)  # Cada entrada tem 22 bytes
                 posicao_atual = f.tell() # salva a posição da entrada sendo lida
+                byte_array = f.read(22)  # Cada entrada tem 22 bytes
 
                 if byte_array[0] == 0x0: # encontrou uma entrada livre
-                    f.seek(posicao_atual - 22)  # Volta para o início da entrada livre # testar
                     return posicao_atual
                 else: # se não achou uma entrada livre, continua
                     pass
