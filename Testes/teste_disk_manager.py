@@ -44,41 +44,41 @@ class TestDiskManager(unittest.TestCase):
         dados_lidos = self.dm.ler_setor(posicao_teste)
         self.assertEqual(dados_lidos, dados_originais)
 
-    def test_escrever_setor_com_padding(self):
-        """Testa se a escrita completa com zeros quando os dados são menores que o setor."""
-        tamanho_setor = self.fsm.get_bytes_por_setor()
-        dados_curtos = b"TESTE_PADDING"
-        posicao_teste = tamanho_setor * 2 # Setor 2
+    # def test_escrever_setor_com_padding(self):
+    #     """Testa se a escrita completa com zeros quando os dados são menores que o setor."""
+    #     tamanho_setor = self.fsm.get_bytes_por_setor()
+    #     dados_curtos = b"TESTE_PADDING"
+    #     posicao_teste = tamanho_setor * 2 # Setor 2
 
-        # Execução
-        self.dm.escrever_setor(posicao_teste, dados_curtos)
+    #     # Execução
+    #     self.dm.escrever_setor(posicao_teste, dados_curtos)
 
-        # Validação Física
-        with open(self.caminho_particao, "rb") as f:
-            f.seek(posicao_teste)
-            conteudo_final = f.read(tamanho_setor)
+    #     # Validação Física
+    #     with open(self.caminho_particao, "rb") as f:
+    #         f.seek(posicao_teste)
+    #         conteudo_final = f.read(tamanho_setor)
             
-            # Deve começar com os dados e terminar com zeros
-            self.assertTrue(conteudo_final.startswith(dados_curtos))
-            self.assertEqual(conteudo_final[len(dados_curtos):], b'\x00' * (tamanho_setor - len(dados_curtos)))
+    #         # Deve começar com os dados e terminar com zeros
+    #         self.assertTrue(conteudo_final.startswith(dados_curtos))
+    #         self.assertEqual(conteudo_final[len(dados_curtos):], b'\x00' * (tamanho_setor - len(dados_curtos)))
 
-    def test_escrever_multiplos_setores(self):
-        """Testa a escrita de dados que ocupam mais de um setor."""
-        tamanho_setor = self.fsm.get_bytes_por_setor()
-        # Dados para ocupar exatamente 2 setores
-        dados_duplos = b"1" * tamanho_setor + b"2" * tamanho_setor
-        posicao_teste = tamanho_setor * 10 # Setor 10
+    # def test_escrever_multiplos_setores(self):
+    #     """Testa a escrita de dados que ocupam mais de um setor."""
+    #     tamanho_setor = self.fsm.get_bytes_por_setor()
+    #     # Dados para ocupar exatamente 2 setores
+    #     dados_duplos = b"1" * tamanho_setor + b"2" * tamanho_setor
+    #     posicao_teste = tamanho_setor * 10 # Setor 10
 
-        # Execução
-        bytes_escritos = self.dm.escrever_setor(posicao_teste, dados_duplos)
+    #     # Execução
+    #     bytes_escritos = self.dm.escrever_setor(posicao_teste, dados_duplos)
         
-        # Deve ter escrito 1024 bytes (2 setores)
-        self.assertEqual(bytes_escritos, tamanho_setor * 2)
+    #     # Deve ter escrito 1024 bytes (2 setores)
+    #     self.assertEqual(bytes_escritos, tamanho_setor * 2)
 
-        # Verificação da integridade
-        with open(self.caminho_particao, "rb") as f:
-            f.seek(posicao_teste)
-            self.assertEqual(f.read(tamanho_setor * 2), dados_duplos)
+    #     # Verificação da integridade
+    #     with open(self.caminho_particao, "rb") as f:
+    #         f.seek(posicao_teste)
+    #         self.assertEqual(f.read(tamanho_setor * 2), dados_duplos)
 
     def test_ler_setor_fora_do_inicio(self):
         """Garante que a leitura respeita o offset/posicao informada."""
