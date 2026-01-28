@@ -98,7 +98,7 @@ class root_dir_manager:
                 if entrada_buffer[0] == 0x00 or entrada_buffer[0] == 0x01:
                     continue
 
-                if extensao == None: # é um arquivo
+                if ext_busca == None: # é um arquivo
                     # Decodifica apenas campos que são strings (Nome e Extensão)
                     nome = entrada_buffer[1:9].decode('utf-8').strip().lower()
                     extensao = entrada_buffer[9:12].decode('utf-8').strip().lower()
@@ -108,14 +108,16 @@ class root_dir_manager:
                     nome = entrada_buffer[1:9].decode('utf-8').strip().lower()
                     extensao = None
 
-                if nome == nome_arquivo.lower() and extensao == extensao_arquivo.lower():
+                if nome == nome_busca and extensao == ext_busca:
                     atributo = entrada_buffer[0:1] # Mantém como byte ou converte para int
                     tamanho = int.from_bytes(entrada_buffer[12:16], 'little')
                     dono = int.from_bytes(entrada_buffer[16:18], 'little')
                     nivel_acesso = int.from_bytes(entrada_buffer[18:20], 'little')
                     primeiro_cluster = int.from_bytes(entrada_buffer[20:22], 'little')
                     
-                    return [atributo, nome, extensao, tamanho, dono, nivel_acesso, primeiro_cluster]          
+                    return [atributo, nome, extensao, tamanho, dono, nivel_acesso, primeiro_cluster]  
+                else:
+                    return (f"Nenhum arquivo ou diretório encontrado com o nome f{nome_arquivo}.{extensao_arquivo}")        
                                 
         return None
     
