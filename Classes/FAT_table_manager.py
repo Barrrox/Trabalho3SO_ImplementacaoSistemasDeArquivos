@@ -8,6 +8,8 @@ class FAT_table_manager:
         self.root_manager = file_sys_manager.root_dir_manager
         self.tamanho_entrada = 4
         self.offset_fat = self.file_sys_manager.get_offset("fat1")
+        self.offset_fat2 = self.file_sys_manager.get_offset("fat2")
+        self.FAT_EOF = 0xFFFFFFFF
 
 
     def verificar_espaco_disponivel(self, tamanho_arquivo):      
@@ -58,12 +60,15 @@ class FAT_table_manager:
 
 
             contador_entradas = 0 # contador para entradas livres encontradas
+
             i = 1 # Começa em 1 para pular a entrada reservada 0         
             # loop para ler todas as entradas FAT
             while i < total_clusters and contador_entradas < numero_entradas:
 
                 # Lê 1 entrada (4 bytes)
                 entrada_bytes = f.read(self.tamanho_entrada) 
+                if len(entrada_bytes) != self.tamanho_entrada:
+                    break  # fim real da FAT
 
                 # Tranforma pra inteiro
                 entrada_int = int.from_bytes(entrada_bytes, 'little')
@@ -112,9 +117,8 @@ class FAT_table_manager:
                 f.seek(posicao)
 
                 if i == len(entradas)-1: # se for o final da chain marca como EOF
-                    final_cluster_chain = 0xFFFFFFFF  # EOF relativo ao sistema de arquivos, já em binário
     
-                    f.write(final_cluster_chain.to_bytes(4, byteorder='little'))
+                    f.write(self.FAT_EOF.to_bytes(4, byteorder='little'))
 
                     break # sai do loop pois ja alocou todos os clusters necessários
 
@@ -156,6 +160,7 @@ class FAT_table_manager:
         # Retorna: lista com as posições relativas dos clusters desse arquivo 
         # ex : lista = [12, 54]
 
+        visitados = set() # proteção contra loop infinito
         endereco_particao = self.file_sys_manager.get_endereco_particao()
         
         cluster_chain = []
@@ -166,41 +171,41 @@ class FAT_table_manager:
         with open(endereco_particao, 'r+b') as f:
 
             while True: # 
+                
+                if cluster_atual in visitados:
+                    raise RuntimeError("Loop detectado na FAT")
+                
+                visitados.add(cluster_atual) # salva o caminho
+                cluster_chain.append(cluster_atual) # salva o cluster atual
 
-                cluster_chain.append(cluster_atual)
-
-                posicao_fat = self.offset_fat + (cluster_atual * self.tamanho_entrada)
+                posicao_fat = self.offset_fat + (cluster_atual * self.tamanho_entrada) # desloca o leitor ate a entrada atual
                 f.seek(posicao_fat)
 
-                entrada_bytes = f.read(self.tamanho_entrada)
+                entrada_bytes = f.read(self.tamanho_entrada) # le o conteudo da entrada
 
-                proximo_cluster = int.from_bytes(entrada_bytes, 'little')
+                proximo_cluster = int.from_bytes(entrada_bytes, 'little') # salva
 
-                if proximo_cluster == 0x00000000: 
+                if proximo_cluster == 0x00000000: # testa se está vazio (erro)
                     return (f"[sys] Erro na leitura da cluster chain: cluster {cluster_atual} aponta para entrada livre")
             
 
                 elif proximo_cluster == 0xFFFFFFFF: # se a entrada atual for a ultima, retorna
                     return cluster_chain
 
-                cluster_atual = proximo_cluster
-        return -1
+                cluster_atual = proximo_cluster # continua a chain
 
 
     def sincronizar_fat_1_2(self):
         # Sincroniza as tabelas FAT
         endereco_particao = self.file_sys_manager.get_endereco_particao()
-
-        offset_fat1 = self.file_sys_manager.get_offset("fat1")
-        offset_fat2 = self.file_sys_manager.get_offset("fat2")
         bytesPorSetor = self.file_sys_manager.get_bytes_por_setor()
         setoresPorTabela = self.file_sys_manager.get_setores_por_tabela()
         size = bytesPorSetor * setoresPorTabela # calcula o tamanho da tabela fat
 
         with open(endereco_particao, 'r+b') as file:
-            file.seek(offset_fat1)
+            file.seek(self.offset_fat)
             dados = file.read(size) # copia os dados da fat 1
 
-            file.seek(offset_fat2) 
+            file.seek(self.offset_fat2) 
             file.write(dados) # cola os dados na fat 2
         return
