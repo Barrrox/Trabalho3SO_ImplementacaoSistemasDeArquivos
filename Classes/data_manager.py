@@ -38,16 +38,16 @@ class data_manager:
 
             posicao = lista_clusters[i] # pega a posição absoluta do cluster a ser escrito
 
-            quanto_falta_ler = len(dados) - bytes_escritos
+            quanto_falta_escrever = len(dados) - bytes_escritos
 
-            if quanto_falta_ler < tamanho_cluster: 
+            if quanto_falta_escrever < tamanho_cluster: 
             # caso específico: último cluster a ser escrito não está completo
             # fix -> pegar o tamanho que falta e completar com 0's
 
-                o_que_sobrou_de_dados_no_cluster = tamanho_cluster - quanto_falta_ler
+                o_que_sobrou_de_dados_no_cluster = tamanho_cluster - quanto_falta_escrever
 
                 dados_a_escrever = dados[bytes_escritos:bytes_escritos+o_que_sobrou_de_dados_no_cluster] # pega de ate onde ja foi escrito até o final
-                dados_a_escrever += b'\x00' * quanto_falta_ler # completa o cluster com 0's
+                dados_a_escrever += b'\x00' * quanto_falta_escrever # completa o cluster com 0's
 
             else:
                 dados_a_escrever = dados[bytes_escritos:(bytes_escritos + tamanho_cluster)] # separa dados com tamanho de 1 cluster
