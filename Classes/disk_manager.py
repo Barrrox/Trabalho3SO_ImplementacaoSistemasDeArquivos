@@ -19,6 +19,7 @@ class disk_manager:
         :return: string com os dados lidos
         """
 
+        #endereco_particao = r"C:\Users\Usuario\Desktop\Unio\SO\TRAB3\Trabalho3SO_ImplementacaoSistemasDeArquivos\disco_virtual.bin"
         endereco_particao = self.file_sys_manager.get_endereco_particao()
 
         with open(endereco_particao, 'r+b') as f:
@@ -36,13 +37,16 @@ class disk_manager:
         :param dados: dados a serem escritos, deve ter tamanho de 1 setor
         """
 
+        #endereco_particao = r"C:\Users\Usuario\Desktop\Unio\SO\TRAB3\Trabalho3SO_ImplementacaoSistemasDeArquivos\disco_virtual.bin"
         endereco_particao = self.file_sys_manager.get_endereco_particao()
 
         with open(endereco_particao, 'r+b') as f:
             f.seek(posicao)   
-            f.write(dados)
+            dados = f.write(dados)
 
-            if f.tell == int(posicao) + self.tamanho_setor: # se escreveu certo, posicao inicial + tamanho de um setor é a mesma da posição de término
-                return True
+            if f.tell() == int(posicao) + self.tamanho_setor: # se escreveu certo, posicao inicial + tamanho de um setor é a mesma da posição de término
+                
+                return dados  # retorna a quantia de bytes escritos para rodar o teste  
+
             else: # se não
                 return False
