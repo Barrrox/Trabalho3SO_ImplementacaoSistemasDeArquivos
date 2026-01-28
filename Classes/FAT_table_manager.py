@@ -7,6 +7,7 @@ class FAT_table_manager:
         self.data_manager = file_sys_manager.data_manager
         self.root_manager = file_sys_manager.root_dir_manager
         self.tamanho_entrada = 4
+        self.offset_fat = self.file_sys_manager.get_offset("fat1")
 
 
     def verificar_espaco_disponivel(self, tamanho_arquivo):      
@@ -47,13 +48,11 @@ class FAT_table_manager:
 
         endereco_particao = self.file_sys_manager.get_endereco_particao()
         
-        offset_fat = self.file_sys_manager.get_offset("fat1")
-        
         entradas = []
         with open(endereco_particao, 'rb') as f:
             
             # Começa da entrada 1, ignorando a entrada reservada 0
-            f.seek(offset_fat + 4)
+            f.seek(self.offset_fat + 4)
 
             total_clusters = self.file_sys_manager.get_total_clusters()
 
@@ -95,7 +94,7 @@ class FAT_table_manager:
         
         entradas, __Error = self.buscar_entradas_livres(quantidade_de_clusters) 
 
-        offset_fat = self.file_sys_manager.get_offset("fat1")
+
 
         # separa a quantia de clusters livres necessários para o arquivo
        
@@ -108,7 +107,7 @@ class FAT_table_manager:
 
             for i in range(len(entradas)): # posiciona o cursor na posição absoluta da entrada FAT
 
-                posicao = offset_fat + (entradas[i] * 4)  # Cada entrada FAT tem 4 bytes
+                posicao = self.offset_fat + (entradas[i] * 4)  # Cada entrada FAT tem 4 bytes
                 #posicao = posicao.to_bytes(4, byteorder='little')
                 f.seek(posicao)
 
@@ -130,7 +129,6 @@ class FAT_table_manager:
     def desalocar_arquivo(self, primeiro_cluster):
         # desaloca os clusters de um arquivo alocado na tabela
         endereco_particao = self.file_sys_manager.get_endereco_particao()
-        offset_fat = self.file_sys_manager.get_offset("fat1")
 
         livre = 0x00000000
         fim = 0xFFFFFFFF
@@ -138,7 +136,7 @@ class FAT_table_manager:
         cluster_atual = primeiro_cluster
         with open(endereco_particao, 'r+b') as file:
             while True:
-                posicao = offset_fat + (cluster_atual * 4) # Entrada de 4bytes
+                posicao = self.offset_fat + (cluster_atual * 4) # Entrada de 4bytes
                 file.seek(posicao) # posiciona o cursor na entrada
 
                 proximo_cluster = int.from_bytes(file.read(4), 'little') # lê os bytes da posição (littlend) e transforma pra inteiro
@@ -155,36 +153,37 @@ class FAT_table_manager:
 
     def pegar_clusters_arquivo(self, primeiro_cluster):
         # Encontra todos os clusters de um arquivo
-        # Retorna: lista com as posições absolutas dos clusters desse arquivo 
-        # ex : lista = [0x02374033, 0x129347698]
+        # Retorna: lista com as posições relativas dos clusters desse arquivo 
+        # ex : lista = [12, 54]
 
         endereco_particao = self.file_sys_manager.get_endereco_particao()
         
-        cluster_chain = [primeiro_cluster]
+        cluster_chain = []
+        cluster_atual = primeiro_cluster 
+
 
         # abre o storage na posicao do primeiro cluster:
         with open(endereco_particao, 'r+b') as f:
-            posicao_atual = f.seek(primeiro_cluster)
-            entrada = f.read(4)
 
             while True: # 
 
-                entrada = f.read(4)
+                cluster_chain.append(cluster_atual)
 
-                if entrada != 0xFFFFFFFF and int(entrada) != 0: # se a entrada na FAT nao eh o final do arquivo e nem vazia -> sinaliza o proximo cluster da chain
+                posicao_fat = self.offset_fat + (cluster_atual * self.tamanho_entrada)
+                f.seek(posicao_fat)
 
-                    cluster_chain.append(bin(entrada)) # salva o endereço do proximo cluster na lista de retorno
+                entrada_bytes = f.read(self.tamanho_entrada)
 
-                    posicao_atual = bin(entrada) # salta para o proximo cluster
-                    f.seek(posicao_atual)
+                proximo_cluster = int.from_bytes(entrada_bytes, 'little')
 
-                elif entrada == 0xFFFFFFFF: # se a entrada atual for a ultima
+                if proximo_cluster == 0x00000000: 
+                    return (f"[sys] Erro na leitura da cluster chain: cluster {cluster_atual} aponta para entrada livre")
+            
+
+                elif proximo_cluster == 0xFFFFFFFF: # se a entrada atual for a ultima, retorna
                     return cluster_chain
 
-                else: # se nao caiu em nenhum eh pq tava vazia por algum motivo
-                    error = f"[sys] - Erro na leitura da cluster chain, {cluster_chain[-1]} apontou para uma entrada vazia"
-                    return error 
-
+                cluster_atual = proximo_cluster
         return -1
 
 
