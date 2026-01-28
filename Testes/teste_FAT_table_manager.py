@@ -3,11 +3,15 @@ from unittest.mock import MagicMock, patch, mock_open
 from Classes.file_system_manager import FileSystemManager
 import os
 
+from Formatador.criar_particao_mock import criar_disco_mock
+
 class TestRootDirManager(unittest.TestCase):
 
     def setUp(self):
         
         self.fsm = FileSystemManager()
+
+        criar_disco_mock("disco_teste_root_dir.bin", 1024 * 1024 * 100)
         
         self.caminho_particao = "disco_teste_root_dir.bin"
         self.tamanho_teste = 1024 * 1024 * 100 # 100 MB

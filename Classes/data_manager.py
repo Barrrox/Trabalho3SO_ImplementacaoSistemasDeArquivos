@@ -16,7 +16,9 @@ class data_manager:
             # Recorta o array no tamanho do setor
             setor = cluster[i:i + tamanho_setor]
             # Retorna via yield uma lista contendo os bytes do setor
-            yield [setor]
+            yield setor
+
+
 
 
     def alocar_cluster(self, lista_clusters, dados):
@@ -44,10 +46,10 @@ class data_manager:
             # caso específico: último cluster a ser escrito não está completo
             # fix -> pegar o tamanho que falta e completar com 0's
 
-                o_que_sobrou_de_dados_no_cluster = tamanho_cluster - quanto_falta_escrever
+                dados_reais = dados[bytes_escritos:]
+                padding = tamanho_cluster - len(dados_reais)
+                dados_a_escrever = dados_reais + b'\x00' * padding
 
-                dados_a_escrever = dados[bytes_escritos:bytes_escritos+o_que_sobrou_de_dados_no_cluster] # pega de ate onde ja foi escrito até o final
-                dados_a_escrever += b'\x00' * quanto_falta_escrever # completa o cluster com 0's
 
             else:
                 dados_a_escrever = dados[bytes_escritos:(bytes_escritos + tamanho_cluster)] # separa dados com tamanho de 1 cluster
@@ -60,14 +62,10 @@ class data_manager:
                 # escreve no setor
                 self.disk_manager.escrever_setor(posicao_escrita, setor) # manda a requisição de escrita para o disk manager
                 bytes_escritos += len(setor) # variável de controle de bytes escritos
-                
+            
                 # ajusta o offset de escrita para a posição do próximo setor
                 escritas_setor+=1
-                posicao_escrita = posicao * escritas_setor
-            
-            if bytes_escritos != tamanho_cluster * (1+numero_de_escritas): # checka se a quantia de bytes escritos é compatível com o esperado
-                error = "[sys] - erro durante a escrita dos setores via alocar_cluster()"
-                return error
+                posicao_escrita = posicao + (escritas_setor * self.disk_manager.tamanho_setor)
 
 
         if bytes_escritos != len(dados):
