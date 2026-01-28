@@ -1,14 +1,15 @@
 import math
 
 class disk_manager:
+    
     def __init__(self, file_sys_manager):
         self.file_sys_manager = file_sys_manager
 
-        tamanho_setor = self.file_sys_manager.get_bytes_por_setor()
-        tamanho_cluster = self.file_sys_manager.get_tamanho_cluster()
-        setores_por_cluster = self.file_sys_manager.get_setores_por_cluster()
+        self.tamanho_setor = self.file_sys_manager.get_bytes_por_setor()
+        self.tamanho_cluster = self.file_sys_manager.get_tamanho_cluster()
+        self.setores_por_cluster = self.file_sys_manager.get_setores_por_cluster()
 
-        cluster_em_bytes = setores_por_cluster * tamanho_setor
+        self.cluster_em_bytes = self.setores_por_cluster * self.tamanho_setor
  
     def ler_setor(self, posicao):
         """
