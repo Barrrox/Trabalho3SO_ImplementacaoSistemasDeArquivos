@@ -24,7 +24,7 @@ class disk_manager:
         with open(endereco_particao, 'r+b') as f:
             f.seek(posicao)
 
-            lido = list(f.read(self.tamanho_setor))  # lê 1 setor # talvez acessar uma variavel da classe a cada leitura cause lentidão, não sei
+            lido = f.read(self.tamanho_setor)  # lê 1 setor # talvez acessar uma variavel da classe a cada leitura cause lentidão, não sei
         
         return lido
 
