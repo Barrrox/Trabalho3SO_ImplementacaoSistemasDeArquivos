@@ -6,6 +6,7 @@ class FAT_table_manager:
         self.file_sys_manager = file_sys_manager
         self.data_manager = file_sys_manager.data_manager
         self.root_manager = file_sys_manager.root_dir_manager
+        self.tamanho_entrada = 4
 
 
     def verificar_espaco_disponivel(self, tamanho_arquivo):      
@@ -89,44 +90,41 @@ class FAT_table_manager:
         
         """
         endereco_particao = self.file_sys_manager.get_endereco_particao()
-
-        # falta alterar o campo 1° cluster da entrada do arquivo no root dir
-
         tamanho_cluster = self.file_sys_manager.get_tamanho_cluster()
-
         quantidade_de_clusters = math.ceil(tamanho_arquivo/tamanho_cluster)
-
+        
         entradas, __Error = self.buscar_entradas_livres(quantidade_de_clusters) 
 
         offset_fat = self.file_sys_manager.get_offset("fat1")
 
         # separa a quantia de clusters livres necessários para o arquivo
        
-        if __Error == None: # se tem clusters livres 
-    
-            with open(endereco_particao, 'r+b') as f:
-                
-                # pega as entradas livres necessárias na tabela FAT
-
-                for i in range(len(entradas)): # posiciona o cursor na posição absoluta da entrada FAT
-
-                    posicao = offset_fat + (entradas[i] * 4)  # Cada entrada FAT tem 4 bytes
-                    posicao = posicao.to_bytes(4, byteorder='little')
-                    f.seek(posicao)
-
-                    if i == len(entradas)-1: # se for o final da chain marca como EOF
-                        final_cluster_chain = 0xFFFFFFFF  # EOF relativo ao sistema de arquivos, já em binário
-                        f.write(final_cluster_chain)
-
-                        break # sai do loop pois ja alocou todos os clusters necessários
-
-                    else: # se nao for o final da chain aponta para o próximo cluster
-                        posicao_prox_cluster = offset_fat + (entradas[i+1] * 4)
-                        posicao_prox_cluster = posicao_prox_cluster.to_bytes(4, byteorder='little')
-                        
-                        f.write(posicao_prox_cluster)
-        else:
+        if __Error is not None: # se tem clusters livres 
             return False
+    
+        with open(endereco_particao, 'r+b') as f:
+            
+            # pega as entradas livres necessárias na tabela FAT
+
+            for i in range(len(entradas)): # posiciona o cursor na posição absoluta da entrada FAT
+
+                posicao = offset_fat + (entradas[i] * 4)  # Cada entrada FAT tem 4 bytes
+                #posicao = posicao.to_bytes(4, byteorder='little')
+                f.seek(posicao)
+
+                if i == len(entradas)-1: # se for o final da chain marca como EOF
+                    final_cluster_chain = 0xFFFFFFFF  # EOF relativo ao sistema de arquivos, já em binário
+    
+                    f.write(final_cluster_chain.to_bytes(4, byteorder='little'))
+
+                    break # sai do loop pois ja alocou todos os clusters necessários
+
+                else: # se nao for o final da chain aponta para o próximo cluster
+                    proximo_cluster = entradas[i + 1]
+                    f.write(proximo_cluster.to_bytes(self.tamanho_entrada, 'little'))
+                    
+        
+
                         
         return entradas
 
