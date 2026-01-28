@@ -1,6 +1,7 @@
 import unittest
 import os
 from Classes.file_system_manager import FileSystemManager
+from Testes import TAMANHO_TESTE
 
 class TestRootDirManager(unittest.TestCase):
 
@@ -10,8 +11,7 @@ class TestRootDirManager(unittest.TestCase):
         
         # 2. Configura o arquivo de disco virtual real
         self.caminho_particao = "disco_teste_root.bin"
-        self.tamanho_teste = 1024 * 1024 * 100 # 100 MB
-        # self.tamanho_teste = 1024 * 1024 * 1024 # 1 GB
+        self.tamanho_teste = TAMANHO_TESTE
         
         with open(self.caminho_particao, 'wb') as f:
             f.seek(self.tamanho_teste)

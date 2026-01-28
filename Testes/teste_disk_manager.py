@@ -1,6 +1,7 @@
 import unittest
 import os
 from Classes.file_system_manager import FileSystemManager
+from Testes import TAMANHO_TESTE
 
 class TestDiskManager(unittest.TestCase):
 
@@ -10,7 +11,7 @@ class TestDiskManager(unittest.TestCase):
         
         # 2. Configura o arquivo de disco virtual para os testes
         self.caminho_particao = "disco_teste_disk.bin"
-        self.tamanho_teste = 1024 * 1024 *100 # 100 MB
+        self.tamanho_teste = TAMANHO_TESTE
         
         # Cria o arquivo binário zerado
         with open(self.caminho_particao, 'wb') as f:

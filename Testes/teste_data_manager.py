@@ -1,6 +1,7 @@
 import unittest
 from Classes.file_system_manager import FileSystemManager
 import os
+from Testes import TAMANHO_TESTE
 
 class TestFatTableManager(unittest.TestCase):
 
@@ -9,8 +10,7 @@ class TestFatTableManager(unittest.TestCase):
         self.fsm = FileSystemManager()
         
         self.caminho_particao = "disco_teste_root_dir.bin"
-        self.tamanho_teste = 1024 * 1024 * 100 # 100 MB
-        # self.tamanho_teste = 1024 * 1024 * 1024 # 1 GB
+        self.tamanho_teste = TAMANHO_TESTE
 
         with open(self.caminho_particao, 'wb') as f:
             f.seek(self.tamanho_teste - 1)
