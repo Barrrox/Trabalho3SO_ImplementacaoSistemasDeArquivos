@@ -1,5 +1,7 @@
 import unittest
 from unittest.mock import patch, MagicMock
+from Testes import TAMANHO_TESTE
+import os
 
 from Classes.file_system_manager import FileSystemManager
 
@@ -8,9 +10,23 @@ class TesteSystemFileManager(unittest.TestCase):
     def setUp(self):
 
         self.file_system_manager = FileSystemManager()
+        self.data_manager = self.file_system_manager.data_manager
+        self.root_manager = self.file_system_manager.root_dir_manager
+        self.fat_manager = self.file_system_manager.fat_manager
+
+        self.caminho_particao = "disco_teste_fsm.bin"
+        self.tamanho_teste = TAMANHO_TESTE
+
+        with open(self.caminho_particao, 'wb') as f:
+            f.seek(self.tamanho_teste - 1)
+            f.write(b'\x00')
+
+        self.file_system_manager.comando_formatar(self.caminho_particao, "512", "8", "512")
         return 
     
     def tearDown(self):
+        if os.path.exists(self.caminho_particao):
+            os.remove(self.caminho_particao)
         return 
     
     # ler_input_interface
@@ -124,6 +140,40 @@ class TesteSystemFileManager(unittest.TestCase):
         
         retorno_esperado = ["[sys] - Arquivo não encontrado"]
         self.assertEqual(retorno, retorno_esperado)
+
+    def test_fluxo_alocacao(self):
+        """
+        Testa o fluxo completo de alocação. Roda um for que realiza a operação 3 vezes.
+
+        DataManager.alocar_cluster -> FAT.alocar_entradas -> RootDir.escrever_entrada.
+        """
+
+        for i in range(3):
+
+            dados = str(i)*1000
+            tamanho_arquivo = len(dados) * 8
+            
+            clusters_livres = self.fat_manager.buscar_entradas_livres(10)
+
+            self.fat_manager.alocar_entradas_FAT(tamanho_arquivo)
+
+            self.data_manager.alocar_cluster(clusters_livres, dados)
+            
+            atributo = 0x02 # Arquivo
+            nome = f"arq{i}"
+            extensao = "txt"
+            tamanho = tamanho
+            primeiro_cluster = clusters_livres[0]
+            dono = 0
+            nivel_de_acesso = 0
+
+            self.root_manager.escrever_entrada_arquivo(atributo, nome, extensao, tamanho, primeiro_cluster, dono, nivel_de_acesso)
+
+            dados_lidos = self.data_manager.ler_clusters(clusters_livres)
+
+            self.assertEqual(dados_lidos, dados)
+            
+
 
 if __name__ == "__main__":
     unittest.main()
