@@ -23,9 +23,6 @@ class FileSystemManager:
         self.__endereco_particao = None
         self.__tamanho_total_particao = 0
         self.__usuario = None
-  
-
-        self.file_system_manager.get
 
         # Inicializa os managers que não tem dependências primeiro
         self.root_dir_manager = root_dir_manager(self)
