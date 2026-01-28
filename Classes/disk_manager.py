@@ -55,8 +55,8 @@ class disk_manager:
                 bytes_escritos += len(setor_a_escrever)
 
             if bytes_escritos != len(dados):
-                print(f"Erro na escrita do setor. bytes_escritos != len(dados): {bytes_escritos} != {len(dados)}")
+                return (f"Erro na escrita do setor. bytes_escritos != len(dados): {bytes_escritos} != {len(dados)}")
             if bytes_escritos + len(dados) != f.tell():
-                print(f"Erro na escrita do setor. bytes_escritos + len(dados) != f.tell(): {bytes_escritos} + {len(dados)} != {f.tell()}")
+                return (f"Erro na escrita do setor. bytes_escritos + len(dados) != f.tell(): {bytes_escritos} + {len(dados)} != {f.tell()}")
 
         return bytes_escritos

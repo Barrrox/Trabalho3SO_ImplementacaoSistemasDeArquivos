@@ -71,9 +71,9 @@ class data_manager:
 
 
         if bytes_escritos != len(dados):
-            return print(f"Erro na alocação do cluster. bytes_escritos != len(dados): {bytes_escritos} != {len(dados)}")
+            return (f"Erro na alocação do cluster. bytes_escritos != len(dados): {bytes_escritos} != {len(dados)}")
         else:
-            return ("Clusters alocados com sucesso. Posicoes: ", lista_clusters)
+            return (f"Clusters alocados com sucesso. Posicoes: {lista_clusters}")
 
     
     def liberar_cluster():
