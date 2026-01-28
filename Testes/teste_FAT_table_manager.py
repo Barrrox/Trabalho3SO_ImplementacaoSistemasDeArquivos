@@ -81,6 +81,80 @@ class TestRootDirManager(unittest.TestCase):
 
         self.assertEqual(retorno_esperado, retorno_real)
 
+
+    def test_alocar_entradas_FAT_sucesso_um_cluster(self):
+        """Testa a alocação de um único cluster na FAT."""
+        tamanho_cluster = self.fsm.get_tamanho_cluster()
+        offset_fat = self.fsm.get_offset("fat1")
+        
+        # Tenta alocar espaço para 1 cluster (ex: arquivo de 500 bytes com cluster de 4KB)
+        resultado = self.fsm.fat_manager.alocar_entradas_FAT(500)
+        
+        # O primeiro cluster livre deve ser o 1 (conforme sua lógica de pular o 0)
+        self.assertEqual(resultado, [1])
+        
+        # Verificação física na FAT
+        with open(self.caminho_particao, "rb") as f:
+            # Posiciona no índice 1 da FAT (offset_fat + 1*4)
+            f.seek(offset_fat + 4)
+            entrada = int.from_bytes(f.read(4), 'little')
+            # Deve ser EOF (0xFFFFFFFF)
+            self.assertEqual(entrada, 0xFFFFFFFF)
+
+    def test_alocar_entradas_FAT_sucesso_multiplos_clusters(self):
+        """Testa o encadeamento (chaining) de múltiplos clusters."""
+        tamanho_cluster = self.fsm.get_tamanho_cluster()
+        offset_fat = self.fsm.get_offset("fat1")
+        
+        # Aloca 3 clusters (ex: arquivo de 10KB com cluster de 4KB)
+        clusters_alocados = self.fsm.fat_manager.alocar_entradas_FAT(1024 * 10)
+        
+        self.assertEqual(clusters_alocados, [1, 2, 3])
+        
+        with open(self.caminho_particao, "rb") as f:
+            # Cluster 1 deve apontar para o 2
+            f.seek(offset_fat + (1 * 4))
+            self.assertEqual(int.from_bytes(f.read(4), 'little'), 2)
+            
+            # Cluster 2 deve apontar para o 3
+            f.seek(offset_fat + (2 * 4))
+            self.assertEqual(int.from_bytes(f.read(4), 'little'), 3)
+            
+            # Cluster 3 deve ser EOF
+            f.seek(offset_fat + (3 * 4))
+            self.assertEqual(int.from_bytes(f.read(4), 'little'), 0xFFFFFFFF)
+
+    def test_alocar_entradas_FAT_fragmentado(self):
+        """Testa a alocação quando existem clusters ocupados no meio."""
+        offset_fat = self.fsm.get_offset("fat1")
+        
+        # 1. Simula ocupação: marca o cluster 2 como ocupado manualmente
+        with open(self.caminho_particao, "rb+") as f:
+            f.seek(offset_fat + (2 * 4))
+            f.write((99).to_bytes(4, 'little'))
+            
+        # 2. Aloca 2 clusters. O sistema deve pular o 2 e usar [1, 3]
+        clusters_alocados = self.fsm.fat_manager.alocar_entradas_FAT(512 * 16) # 2 clusters
+        
+        self.assertEqual(clusters_alocados, [1, 3])
+        
+        with open(self.caminho_particao, "rb") as f:
+            # Cluster 1 deve apontar para o 3
+            f.seek(offset_fat + (1 * 4))
+            self.assertEqual(int.from_bytes(f.read(4), 'little'), 3)
+            
+            # Cluster 3 deve ser EOF
+            f.seek(offset_fat + (3 * 4))
+            self.assertEqual(int.from_bytes(f.read(4), 'little'), 0xFFFFFFFF)
+
+    def test_alocar_entradas_FAT_sem_espaco(self):
+        """Testa o comportamento quando o disco está cheio."""
+        # Tenta alocar um tamanho absurdamente maior que os 10MB do setUp
+        resultado = self.fsm.fat_manager.alocar_entradas_FAT(1024 * 1024 * 100)
+        
+        # Deve retornar False conforme definido no manager
+        self.assertFalse(resultado)
+
 # Testes verificar espaco:
     # arquivo menor que o setor
     # arquivo maior que o setor
