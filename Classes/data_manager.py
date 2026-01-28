@@ -20,26 +20,53 @@ class data_manager:
 
 
     def alocar_cluster(self, lista_clusters, dados):
+        """
+        Docstring for alocar_cluster
+        
+        :param lista_clusters: lista contendo as posições absolutas dos clusters alocados
+        :param dados: conjunto de dados a escrever, deve ser contínuo (sem separação cluser a cluster)
+        """
 
         tamanho_cluster = self.file_sys_manager.get_tamanho_cluster()
         numero_de_escritas = len(lista_clusters)
 
         bytes_escritos = 0 # variável de controle de bytes escritos
-        for i in range(numero_de_escritas):
+
+        for i in range(numero_de_escritas): # escreve um numero de vezes == ao numero de clusters necessários
 
             posicao = lista_clusters[i] # pega a posição absoluta do cluster a ser escrito
-            dados_a_escrever = dados[bytes_escritos:(bytes_escritos + tamanho_cluster)] # separa dados com tamanho de 1 cluster
 
-            if len(dados_a_escrever) < tamanho_cluster:
-                # se os dados a escrever forem menores que o tamanho do cluster, completa com zeros
-                dados_a_escrever += b'\x00' * (tamanho_cluster - len(dados_a_escrever))
+            quanto_falta_escrever = len(dados) - bytes_escritos
+
+            if quanto_falta_escrever < tamanho_cluster: 
+            # caso específico: último cluster a ser escrito não está completo
+            # fix -> pegar o tamanho que falta e completar com 0's
+
+                o_que_sobrou_de_dados_no_cluster = tamanho_cluster - quanto_falta_escrever
+
+                dados_a_escrever = dados[bytes_escritos:bytes_escritos+o_que_sobrou_de_dados_no_cluster] # pega de ate onde ja foi escrito até o final
+                dados_a_escrever += b'\x00' * quanto_falta_escrever # completa o cluster com 0's
+
+            else:
+                dados_a_escrever = dados[bytes_escritos:(bytes_escritos + tamanho_cluster)] # separa dados com tamanho de 1 cluster
 
             # separa na quantia de setores necessários para a escrita
+            escritas_setor = 0
+            posicao_escrita = posicao
             for setor in self.split_cluster_in_sectors(dados_a_escrever):
-
-                # escreve o setor
-                self.disk_manager.escrever_setor(posicao, dados_a_escrever) # manda a requisição de escrita para o disk manager
+                
+                # escreve no setor
+                self.disk_manager.escrever_setor(posicao_escrita, setor) # manda a requisição de escrita para o disk manager
                 bytes_escritos += len(setor) # variável de controle de bytes escritos
+                
+                # ajusta o offset de escrita para a posição do próximo setor
+                escritas_setor+=1
+                posicao_escrita = posicao * escritas_setor
+            
+            if bytes_escritos != tamanho_cluster * (1+numero_de_escritas): # checka se a quantia de bytes escritos é compatível com o esperado
+                error = "[sys] - erro durante a escrita dos setores via alocar_cluster()"
+                return error
+
 
         if bytes_escritos != len(dados):
             return print(f"Erro na alocação do cluster. bytes_escritos != len(dados): {bytes_escritos} != {len(dados)}")
@@ -56,5 +83,16 @@ class data_manager:
         Lê os dados de um arquivo via disk_manager. Os clusters precisam estar em ordem
         clusters_arquivo: lista com as posições absolutas dos clusters do arquivo a serem lidos
         Retorna: dados lidos do arquivo (byte array)"""
+        tamanho_cluster = self.file_sys_manager.get_tamanho_cluster()
+        numero_de_escritas = len(lista_clusters)
+
+        bytes_escritos = 0 # variável de controle de bytes escritos
+        for i in range(numero_de_escritas):
+
+            posicao = lista_clusters[i] # pega a posição absoluta do cluster a ser escrito
+            dados_a_escrever = dados[bytes_escritos:(bytes_escritos + tamanho_cluster)] # separa dados com tamanho de 1 cluster
+
+
+
 
         return dados_arquivo
