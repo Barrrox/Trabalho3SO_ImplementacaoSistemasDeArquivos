@@ -25,9 +25,9 @@ class FAT_table_manager:
         tamanho_cluster = self.file_sys_manager.get_tamanho_cluster()
         quantidade_de_clusters_necessarios = math.ceil(tamanho_arquivo / tamanho_cluster)
         
-        entradas = self.buscar_entradas_livres(quantidade_de_clusters_necessarios)
+        entradas, error = self.buscar_entradas_livres(quantidade_de_clusters_necessarios)
 
-        if len(entradas) != quantidade_de_clusters_necessarios:
+        if error:
             return False
 
         else:   
@@ -64,7 +64,7 @@ class FAT_table_manager:
             while i < total_clusters and contador_entradas < numero_entradas:
 
                 # Lê 1 entrada (4 bytes)
-                entrada_bytes = f.read(4) 
+                entrada_bytes = f.read(self.tamanho_entrada) 
 
                 # Tranforma pra inteiro
                 entrada_int = int.from_bytes(entrada_bytes, 'little')
@@ -123,8 +123,6 @@ class FAT_table_manager:
                     proximo_cluster = entradas[i + 1]
                     f.write(proximo_cluster.to_bytes(self.tamanho_entrada, 'little'))
                     
-        
-
                         
         return entradas
 
