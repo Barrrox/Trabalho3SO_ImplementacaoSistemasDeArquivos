@@ -21,4 +21,5 @@ def criar_disco_mock(nome_arquivo, num_setores):
         print(f"Erro ao criar o disco mock: {e}")
 
 # Exemplo: Criar um disco de 10MB (aprox. 20.000 setores)
-criar_disco_mock("disco_virtual.bin", 20000)
+# criar_disco_mock("disco_virtual.bin", 20000)
+
