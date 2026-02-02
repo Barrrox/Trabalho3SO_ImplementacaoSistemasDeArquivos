@@ -18,7 +18,7 @@ class FileSystemManager:
         self.__setores_por_tabela  = 131072 # 4 bytes
         
         # valores variáveis
-        self.__setores_por_cluster = 8      # 1 byte
+        self.__setores_por_cluster = 2      # 1 byte
         self.__num_entradas_raiz   = 512    # 2 bytes
         self.__endereco_particao = None
         self.__tamanho_total_particao = 0
@@ -215,7 +215,7 @@ class FileSystemManager:
     # Exemplo de comando usando retorno com dicionarios
     def comando_exemplo2(self, *args):
 
-        if args[0] == 1:
+        if args[0] == "1":
             return {"rodou?": True, "comando" : "exemplo2", "dados" : 1, "msg_erro": None}
         else:
             return {"rodou?": False, "comando" : "exemplo2", "dados" : None, "msg_erro": "Não digitou 1"}
@@ -447,7 +447,13 @@ class FileSystemManager:
             Lista com uma mensagem de erro caso falha
         """
         # 1. Inicialização de variáveis via argumentos
-        endereco_particao    = args[0]
+        endereco_particao = args[0].strip('\'"')
+        
+        endereco_particao = os.path.normpath(endereco_particao)
+        print()
+
+        #endereco_particao = args[0]
+
         bytes_por_setor     = int(args[1])
         setores_por_cluster = int(args[2])
         num_entradas_raiz   = int(args[3])
@@ -462,36 +468,39 @@ class FileSystemManager:
             tamanho_particao = os.path.getsize(endereco_particao)
 
             # 4. Calculando setores por tabela
-            
             # Setores por tabela = RoundUp(TotalClusters * TamEntradaFAT / BytesPorSetor)
-            
-            total_clusters = self.get_total_clusters()
+
+            total_clusters = tamanho_particao / bytes_por_setor / setores_por_cluster
+
             bytes_por_entrada = 32 / 4 # 32 bits de entrada FAT -> 4 bytes
 
             tamannho_fat_bytes = total_clusters * math.ceil(bytes_por_entrada)
 
             setores_por_tabela = math.ceil(tamannho_fat_bytes / bytes_por_setor)       
 
+            # 6. Guardar os novos dados nos atributos privados (Estado do Sistema)
+            self.set_bytes_por_setor(int(bytes_por_setor))
+            self.set_setores_por_tabela(int(setores_por_tabela))
+            self.set_setores_por_cluster(int(setores_por_cluster))
+            self.set_num_entradas_raiz(int(num_entradas_raiz))
+            self.set_endereco_particao(endereco_particao)
+            self.set_tamanho_total_particao(int(tamanho_particao))
+
             # 5. Execução da formatação
             formatador = Formatador()
             formatador.formatar_completo(
                 endereco_particao, 
-                tamanho_particao, 
-                bytes_por_setor, 
-                setores_por_tabela, 
-                setores_por_cluster, 
-                num_entradas_raiz
+                int(tamanho_particao), 
+                int(bytes_por_setor), 
+                int(setores_por_tabela), 
+                int(setores_por_cluster), 
+                int(num_entradas_raiz)
             )
-
-            # 6. Guardar os novos dados nos atributos privados (Estado do Sistema)
-            self.set_bytes_por_setor(bytes_por_setor)
-            self.set_setores_por_tabela(setores_por_tabela)
-            self.set_setores_por_cluster(setores_por_cluster)
-            self.set_num_entradas_raiz(num_entradas_raiz)
+            
             self.set_endereco_particao(endereco_particao)
-            self.set_tamanho_total_particao(tamanho_particao)
-
             return [f"[sys] - Partição em {endereco_particao} formatada com sucesso."]
+        
+        
 
         except Exception as e:
             return [f"[sys] - Erro inesperado: {str(e)}"]
