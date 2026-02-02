@@ -29,7 +29,7 @@ class interface:
         print("[sys] Sistema de Arquivos iniciado. Digite 'ajuda'.")
 
         while True:
-            entrada = input("\n>> ").strip().lower()
+            entrada = input("\n>> ").strip()
 
             if not entrada:
                 continue

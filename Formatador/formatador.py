@@ -13,8 +13,6 @@ class Formatador:
         with open(caminho_particao, 'wb') as f:
             f.seek(tamanho_particao - 1)
             f.write(b'\x00')
-        
-
         return 
 
     # recebe os parametros em valor numérico, faz a tradução para binário (little-endian) na hora da escrita
