@@ -12,7 +12,7 @@ class TestRootDirManager(unittest.TestCase):
         
         self.fsm = FileSystemManager()
 
-        criar_disco_mock("disco_teste_root_dir.bin", 1024 * 1024 * 100)
+        criar_disco_mock("disco_teste_root_dir.bin", 2048)
         
         self.caminho_particao = "disco_teste_root_dir.bin"
         self.tamanho_teste = TAMANHO_TESTE
