@@ -320,7 +320,10 @@ class FileSystemManager:
         Parâmetros:
             caminho_origem: path absoluto do arquivo dentro do SO
 
-
+ lista_comandos = ["exemplo", "exemplo2", "deletar", "bootrecord", "copiar", "listar", "formatar"]
+            if comando in lista_comandos:
+                return True
+            else: 
         Retorna: 
 
         """
