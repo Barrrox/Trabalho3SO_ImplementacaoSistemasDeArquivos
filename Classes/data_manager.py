@@ -91,8 +91,8 @@ class data_manager:
         tamanho_setor = self.file_sys_manager.get_tamanho_setor()
         numero_de_leituras = len(lista_clusters)
 
-        dados_arquivo = []
-        dados_lidos =""
+        dados_arquivo = ""
+        dados_lidos = b""
         bytes_lidos = 0 # variável de controle de bytes lidos
 
         for i in range(numero_de_leituras): # escreve um numero de vezes == ao numero de clusters necessários
@@ -105,7 +105,7 @@ class data_manager:
                 bytes_lidos += tamanho_setor
             
             if bytes_lidos == tamanho_cluster:
-                dados_arquivo.append(dados_lidos)
+                dados_arquivo += dados_lidos
 
             else:
                 error = f"[sys] - bytes lidos != tamanho de 1 cluster -> {bytes_lidos} != {tamanho_cluster}"
