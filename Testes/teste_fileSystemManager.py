@@ -172,6 +172,66 @@ class TesteSystemFileManager(unittest.TestCase):
             dados_lidos = self.data_manager.ler_clusters(clusters_livres)
 
             self.assertEqual(dados_lidos, dados)
+
+    def test_funcao_copiar_interna(self):
+        """
+        Teste de integração: Copia um arquivo de fora do sistema de arquivos para dentro do disco virtual.
+        Verifica se a entrada no Root Dir foi criada e se o tamanho confere.
+        """
+
+        # 1. Preparação: Criar um arquivo físico no Windows/Linux para ser a origem
+        caminho_externo = "arqteste.txt"
+        conteudo_original = b"Conteudo de teste para integracao real"
+        with open(caminho_externo, "wb") as f:
+            f.write(conteudo_original)
+        
+        try:
+            # 2. Execução: Chama a função
+            self.file_system_manager.funcao_copiar_interna(caminho_externo)
+
+            # 3. Validação no Root Directory real
+            # Extraímos o nome para buscar no manager
+            nome_arquivo = caminho_externo[:8]
+            extensao = caminho_externo[-3:]
+            
+            entrada = self.root_manager.ler_entrada(nome_arquivo, extensao)
+            
+            # Verificações
+            self.assertIsNotNone(entrada, "O arquivo deveria ter sido criado no Root Directory.")
+            self.assertEqual(entrada[1].strip(), nome_arquivo, "O nome gravado no Root Dir está incorreto.")
+            self.assertEqual(entrada[3], len(conteudo_original), "O tamanho gravado diverge do arquivo original.")
+            
+        finally:
+            # Limpeza do arquivo de origem externo
+            if os.path.exists(caminho_externo):
+                os.remove(caminho_externo)
+
+    def test_copiar_arquivo_inexistente_no_os(self):
+        """Verifica o comportamento da função ao tentar copiar um arquivo que não existe no SO."""
+        caminho_fantasma = "nao_existir_no_disco.xyz"
+        
+        # A função deve lidar com o erro de path ou o os.path.getsize vai subir exceção
+        with self.assertRaises(FileNotFoundError):
+             self.file_system_manager.funcao_copiar_interna(caminho_fantasma)
+
+    def test_copiar_duplicado_real(self):
+        """Verifica se o sistema impede a cópia de um arquivo com nome idêntico já presente no disco."""
+        caminho_origem = "duplicado.txt"
+        with open(caminho_origem, "wb") as f:
+            f.write(b"dados")
+
+        try:
+            # Primeira cópia (Sucesso esperado)
+            self.file_system_manager.funcao_copiar_interna(caminho_origem)
+            
+            # Segunda cópia (Deve retornar erro conforme a lógica do manager)
+            resultado = self.file_system_manager.funcao_copiar_interna(caminho_origem)
+            
+            self.assertEqual(resultado, ["[sys] - Arquivo já existe no sistema. Operação abortada"])
+            
+        finally:
+            if os.path.exists(caminho_origem):
+                os.remove(caminho_origem)
             
 
 
