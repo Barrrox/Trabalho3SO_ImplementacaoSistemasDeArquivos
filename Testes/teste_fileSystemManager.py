@@ -232,6 +232,54 @@ class TesteSystemFileManager(unittest.TestCase):
         finally:
             if os.path.exists(caminho_origem):
                 os.remove(caminho_origem)
+
+
+    def test_funcao_copiar_externa_sucesso(self):
+        """
+        Teste de integração: Extrai um arquivo do sistema de arquivos para o SO real.
+        Verifica se o conteúdo extraído é idêntico ao que estava gravado no binário.
+        """
+        # 1. Preparação Manual (Injetando um arquivo no disco virtual)
+        nome = "externo"
+        extensao = "txt"
+        conteudo_original = b"Dados guardados dentro do sistema de arquivos FAT48"
+        caminho_destino_os = "arquivo_extraido.txt"
+
+        # Alocamos espaço e gravamos manualmente para garantir que o dado está lá
+        entradas_fat = self.fat_manager.alocar_entradas_FAT(len(conteudo_original))
+        self.data_manager.alocar_cluster(entradas_fat, conteudo_original)
+        self.root_manager.escrever_entrada_arquivo(1, nome, extensao, len(conteudo_original), entradas_fat[0], dono=0, nivel_de_acesso=0)
+
+        try:
+            # 2. Execução: Copia de DENTRO para FORA
+            # O caminho de origem deve simular o path que o seu sistema espera
+            caminho_interno = f"{nome}.{extensao}" 
+            self.file_system_manager.funcao_copiar_externa(caminho_interno, caminho_destino_os)
+
+            # 3. Validação
+            self.assertTrue(os.path.exists(caminho_destino_os), "O arquivo não foi criado no sistema operacional.")
+            
+            with open(caminho_destino_os, "rb") as f:
+                conteudo_extraido = f.read()
+            
+            self.assertEqual(conteudo_extraido, conteudo_original, "O conteúdo extraído difere do original gravado no disco virtual.")
+
+        finally:
+            # Limpeza do arquivo criado no SO
+            if os.path.exists(caminho_destino_os):
+                os.remove(caminho_destino_os)
+
+    def test_copiar_externa_arquivo_inexistente(self):
+        """Verifica se a função retorna o erro correto ao tentar extrair um arquivo que não existe no binário."""
+        caminho_interno = "arquivo_que_nao_existe.txt"
+        caminho_destino = "saida_falha.txt"
+
+        # Execução
+        resultado = self.file_system_manager.funcao_copiar_externa(caminho_interno, caminho_destino)
+
+        # Validação
+        self.assertEqual(resultado, ["[sys] - Arquivo de origem não encontrado"], "A função deveria retornar erro de arquivo não encontrado.")
+        self.assertFalse(os.path.exists(caminho_destino), "Um arquivo não deveria ter sido criado no SO para uma origem inexistente.")
             
 
 
