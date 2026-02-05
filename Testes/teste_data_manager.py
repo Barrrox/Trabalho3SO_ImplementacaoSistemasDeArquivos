@@ -102,5 +102,23 @@ class TestDataManager(unittest.TestCase):
             f.seek(pos_c2)
             self.assertTrue(f.read(tamanho_cluster).startswith(b"PARTE2"))
 
+    def test_ler_clusters_sucesso(self):
+        """Testa se a leitura de clusters retorna os dados gravados anteriormente."""
+        tamanho_cluster = self.fsm.get_tamanho_cluster()
+        # Dados de teste: 1 cluster completo
+        dados_originais = b"DADOS_PARA_LEITURA" + (b"0" * (tamanho_cluster - 18))
+        
+        offset_dados = self.fsm.get_offset("area_dados")
+        lista_clusters = [offset_dados]
+
+        # 1. Escreve os dados primeiro
+        self.fsm.data_manager.alocar_cluster(lista_clusters, dados_originais)
+
+        # 2. Tenta ler os dados de volta
+        dados_lidos = self.fsm.data_manager.ler_clusters(lista_clusters)
+
+        # 3. Validação
+        self.assertEqual(dados_lidos, dados_originais, "Os dados lidos são diferentes dos dados gravados.")
+
 if __name__ == '__main__':
     unittest.main()
