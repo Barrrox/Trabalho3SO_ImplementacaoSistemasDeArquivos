@@ -1,18 +1,76 @@
-# contém as classes e processos necessários para formatar um armazenamento para FAT48
-
- # funções::
-    # Zerar o armazenamento
-    # Escrever o boot record
+"""
+Contém as funções para formatar o pendrive ou um arquivo mock (usado no desenvolvimento)
+"""
+import subprocess
+import os
 
 class Formatador:
 
-    # tamanho partição em bytes
-    def zerar(self, caminho_particao, tamanho_particao):
-        # preenche a particao com 0s
+
+    def zerar(self, caminho_particao : str, tamanho_particao):
+        """
+        Define se a execução será em um arquivo mock ou num pendrive no linux
+        Não funciona para pendrives no Windows
+        
+        :param caminho_particao: caminho absoluto para a particao
+        :param tamanho_particao: tamanho da particao em bytes
+        
+        """
+
+        # Se o caminho da partição tem o "/dev/" então está no linux
+        if caminho_particao.startswith("/dev/"):
+            self.zerar_pendrive(caminho_particao, tamanho_particao)
+        else:
+            self.zerar_mock(caminho_particao, tamanho_particao)
+
+
+
+    def zerar_mock(self, caminho_particao, tamanho_particao):
+        """
+        Zera um arquivo mock para os testes no windows
+        
+        :param caminho_particao: caminho absoluto para a particao
+        :param tamanho_particao: tamanho da particao em bytes
+        """
 
         with open(caminho_particao, 'wb') as f:
             f.seek(tamanho_particao - 1)
             f.write(b'\x00')
+
+        return
+    
+    def zerar_pendrive(self, caminho_particao, tamanho_particao):
+        """
+        Zera o pendrive no linux.
+        Funciona exclusivamento no /dev/<id_disco>
+        
+        :param caminho_particao: caminho absoluto para a particao
+        :param tamanho_particao: tamanho da particao em bytes
+        """
+
+        # dd faz a copia bloco a bloco
+
+        tamanho_bloco = 1024 * 1024
+        # Calcula o total de blocos de 1 MB
+        contagem_blocos = tamanho_particao // tamanho_bloco
+
+        # dd = Disk Destroyer
+        comando = [
+            "dd",
+            "if=/dev/zero",
+            f"of={caminho_particao}",
+            f"bs={tamanho_bloco}",
+            f"count={contagem_blocos}",
+            "status=progress"
+        ]
+
+        try:
+            # No WSL/Linux, isso exige que você rode o script com sudo
+            subprocess.run(comando, check=True)
+            os.sync() # Força a gravação física
+        except subprocess.CalledProcessError as e:
+            print(f"Erro ao executar dd: {e}")
+
         return 
 
     # recebe os parametros em valor numérico, faz a tradução para binário (little-endian) na hora da escrita
