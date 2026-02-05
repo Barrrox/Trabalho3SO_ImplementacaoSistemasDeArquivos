@@ -88,7 +88,7 @@ class data_manager:
         """
 
         tamanho_cluster = self.file_sys_manager.get_tamanho_cluster()
-        tamanho_setor = self.file_sys_manager.get_tamanho_setor()
+        tamanho_setor = self.file_sys_manager.get_bytes_por_setor()
         numero_de_leituras = len(lista_clusters)
 
         dados_arquivo = ""
