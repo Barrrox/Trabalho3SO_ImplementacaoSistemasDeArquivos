@@ -57,7 +57,7 @@ class TestDataManager(unittest.TestCase):
         resultado = self.fsm.data_manager.alocar_cluster(lista_clusters, dados)
         
         # Validação do retorno
-        self.assertEqual(resultado, ("Clusters alocados com sucesso. Posicoes: ", lista_clusters))
+        self.assertEqual(resultado, f"Clusters alocados com sucesso. Posicoes: {lista_clusters}")
 
         # Validação física
         with open(self.caminho_particao, "rb") as f:
