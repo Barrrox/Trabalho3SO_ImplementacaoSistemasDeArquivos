@@ -26,7 +26,7 @@ class data_manager:
         Docstring for alocar_cluster
         
         :param lista_clusters: lista contendo as posições absolutas dos clusters alocados
-        :param dados: conjunto de dados a escrever, deve ser contínuo (sem separação cluser a cluster)
+        :param dados: bytes a serem escritos, deve ser contínuo (sem separação cluser a cluster)
 
         :return: print contendo a lista de posições alocadas 
         """
