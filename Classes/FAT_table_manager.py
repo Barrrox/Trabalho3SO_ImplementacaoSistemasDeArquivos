@@ -90,8 +90,11 @@ class FAT_table_manager:
 
     def alocar_entradas_FAT(self, tamanho_arquivo) :
         """
-        tamanho_arquivo: tamanho em bytes do arquivo a ser alocado
-        
+        Aloca entradas para o tamanho requisitado para o arquivo
+
+        :param tamanho_arquivo: tamanho em bytes do arquivo a ser alocado
+
+        :return entradas: Uma lista com o valor relativo das entradas alocadas
         """
         endereco_particao = self.file_sys_manager.get_endereco_particao()
         tamanho_cluster = self.file_sys_manager.get_tamanho_cluster()
