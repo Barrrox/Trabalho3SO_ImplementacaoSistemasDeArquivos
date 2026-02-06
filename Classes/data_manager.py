@@ -38,7 +38,9 @@ class data_manager:
 
         for i in range(numero_de_escritas): # escreve um numero de vezes == ao numero de clusters necessários
 
-            posicao = lista_clusters[i] # pega a posição absoluta do cluster a ser escrito
+            posicao = lista_clusters[i] + self.file_sys_manager.get_offset("area_dados") # pega a posição relativa do cluster a ser escrito
+
+            print(f"posicao = {posicao}")
 
             quanto_falta_escrever = len(dados) - bytes_escritos
 
@@ -91,11 +93,15 @@ class data_manager:
         tamanho_setor = self.file_sys_manager.get_bytes_por_setor()
         numero_de_leituras = len(lista_clusters)
 
-        dados_arquivo = ""
-        dados_lidos = b""
-        bytes_lidos = 0 # variável de controle de bytes lidos
+        print(f"numero_de_leituras: {numero_de_leituras}")
+
+        dados_arquivo = b""
+        
 
         for i in range(numero_de_leituras): # escreve um numero de vezes == ao numero de clusters necessários
+
+            bytes_lidos = 0 # variável de controle de bytes lidos
+            dados_lidos = b""
 
             posicao = int(lista_clusters[i]) # pega a posição absoluta do cluster a ser escrito
 
