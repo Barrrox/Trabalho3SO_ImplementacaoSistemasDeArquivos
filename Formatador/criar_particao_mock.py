@@ -28,5 +28,5 @@ def criar_disco_mock(nome_arquivo, num_setores, tamanho_bytes = None):
 
 # Exemplo: Criar um disco de 10MB (aprox. 20.000 setores)
 
-criar_disco_mock("disco_virtual.bin", 20000, 17179869184)
+criar_disco_mock("disco_virtual.bin", 20000, 1024 * 1024 * 1024)
 

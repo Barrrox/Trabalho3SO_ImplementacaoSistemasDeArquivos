@@ -50,19 +50,25 @@ class TestDataManager(unittest.TestCase):
         """Testa escrita de 1 cluster completo."""
         tamanho_cluster = self.fsm.get_tamanho_cluster()
         dados = b"A" * tamanho_cluster
+        #print(f"tamanho_cluster: {tamanho_cluster}")
         
-        offset_dados = self.fsm.get_offset("area_dados")
-        lista_clusters = [offset_dados]
+        #print(f"len(dados): {len(dados)}")
+        
+        lista_clusters = [1]
 
         resultado = self.fsm.data_manager.alocar_cluster(lista_clusters, dados)
         
+        #print(f"resultado alocar_cluster: {resultado}")
         # Validação do retorno
         self.assertEqual(resultado, lista_clusters)
 
         # Validação física
         with open(self.caminho_particao, "rb") as f:
-            f.seek(offset_dados)
-            self.assertEqual(f.read(tamanho_cluster), dados)
+    
+            dados_lidos = self.fsm.data_manager.ler_clusters(lista_clusters)
+            self.assertEqual(dados_lidos, dados)
+
+            
 
     def test_alocar_cluster_com_padding(self):
         """Testa se preenche com zeros quando dados < cluster."""
@@ -70,37 +76,40 @@ class TestDataManager(unittest.TestCase):
         dados = b"DADOS_CURTOS"
         
         offset_dados = self.fsm.get_offset("area_dados")
-        lista_clusters = [offset_dados]
+        lista_clusters = [1]
 
         self.fsm.data_manager.alocar_cluster(lista_clusters, dados)
 
         with open(self.caminho_particao, "rb") as f:
             f.seek(offset_dados)
-            conteudo = f.read(tamanho_cluster)
+            conteudo = self.fsm.data_manager.ler_clusters(lista_clusters)
             self.assertTrue(conteudo.startswith(dados))
             self.assertEqual(conteudo[len(dados):], b'\x00' * (tamanho_cluster - len(dados)))
 
     def test_alocar_cluster_multiplos_fragmentados(self):
         """Testa escrita em clusters não contíguos."""
-        tamanho_cluster = self.fsm.get_tamanho_cluster()
-        dados = b"PARTE1" + (b"\x00" * (tamanho_cluster - 6)) + b"PARTE2" + (b"\x00" * (tamanho_cluster - 6))
-        
-        offset_dados = self.fsm.get_offset("area_dados")
-        # Posição do cluster 0 e do cluster 2 (pulando o 1)
-        pos_c0 = offset_dados
-        pos_c2 = offset_dados + (tamanho_cluster * 2)
-        lista_clusters = [pos_c0, pos_c2]
+       
+        dados1 = b"PARTE1"
+        dados2 = b"PARTE2"
 
-        self.fsm.data_manager.alocar_cluster(lista_clusters, dados)
+        # Posição do cluster 1 e do cluster 3 (pulando o 2)
+        pos_c1 = 1
+        pos_c3 = 5
+        
+        self.fsm.data_manager.alocar_cluster([pos_c1], dados1)
+        self.fsm.data_manager.alocar_cluster([pos_c3], dados2)
 
         with open(self.caminho_particao, "rb") as f:
-            # Verifica Cluster 0
-            f.seek(pos_c0)
-            self.assertTrue(f.read(tamanho_cluster).startswith(b"PARTE1"))
             
-            # Verifica Cluster 2
-            f.seek(pos_c2)
-            self.assertTrue(f.read(tamanho_cluster).startswith(b"PARTE2"))
+            # Verifica Cluster 1
+            dados_lidos = self.fsm.data_manager.ler_clusters([pos_c1])
+            #print(dados_lidos[0:10])
+            self.assertTrue(dados_lidos.startswith(b"PARTE1"))
+            
+            # Verifica Cluster 3
+            dados_lidos = self.fsm.data_manager.ler_clusters([pos_c3])
+            #print(dados_lidos[0:10])
+            self.assertTrue(dados_lidos.startswith(b"PARTE2"))
 
     def test_ler_clusters_sucesso(self):
         """Testa se a leitura de clusters retorna os dados gravados anteriormente."""

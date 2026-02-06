@@ -22,9 +22,7 @@ class data_manager:
 
 
     def alocar_cluster(self, lista_clusters, dados):
-        """
-        Docstring for alocar_cluster
-        
+        """        
         :param lista_clusters: lista contendo as posições relativas dos clusters alocados
         :param dados: bytes a serem escritos, deve ser contínuo (sem separação cluser a cluster)
 
@@ -33,14 +31,18 @@ class data_manager:
 
         tamanho_cluster = self.file_sys_manager.get_tamanho_cluster()
         numero_de_escritas = len(lista_clusters)
-
+        offset_dados = self.file_sys_manager.get_offset("area_dados")
         bytes_escritos = 0 # variável de controle de bytes escritos
 
         for i in range(numero_de_escritas): # escreve um numero de vezes == ao numero de clusters necessários
+            # posicao = 0
+            # print(f"lista_clusters[i]: {lista_clusters[i]}")
+            # print(f"posicao = {posicao}")
+            # print(f"posicao + offset area dados => {posicao} + {self.file_sys_manager.get_offset("area_dados")} = {posicao + self.file_sys_manager.get_offset("area_dados")} ")
+        
 
-            posicao = lista_clusters[i] + self.file_sys_manager.get_offset("area_dados") # pega a posição relativa do cluster a ser escrito
+            posicao = (lista_clusters[i] * tamanho_cluster) + offset_dados # pega a posição relativa do cluster a ser escrito
 
-            print(f"posicao = {posicao}")
 
             quanto_falta_escrever = len(dados) - bytes_escritos
 
@@ -60,6 +62,7 @@ class data_manager:
             escritas_setor = 0
             posicao_escrita = posicao
             for setor in self.split_cluster_in_sectors(dados_a_escrever):
+                #print(len(setor))
                 
                 # escreve no setor
                 self.disk_manager.escrever_setor(posicao_escrita, setor) # manda a requisição de escrita para o disk manager
@@ -81,10 +84,8 @@ class data_manager:
         return
     
     def ler_clusters(self, lista_clusters):
-        """
-        Docstring for alocar_cluster
-        
-        :param lista_clusters: lista contendo as posições absolutas dos clusters a serem lidos
+        """        
+        :param lista_clusters: lista contendo as posições relativas dos clusters a serem lidos
 
         :return lista que contém dados lidos com tamanho de 1 cluster a cada posição 
         """
@@ -93,17 +94,20 @@ class data_manager:
         tamanho_setor = self.file_sys_manager.get_bytes_por_setor()
         numero_de_leituras = len(lista_clusters)
 
-        print(f"numero_de_leituras: {numero_de_leituras}")
+        #print(f"numero_de_leituras: {numero_de_leituras}")
 
         dados_arquivo = b""
-        
 
+        offset_dados = self.file_sys_manager.get_offset("area_dados")
+        
+        #print(f"lista_clusters: {lista_clusters}")
         for i in range(numero_de_leituras): # escreve um numero de vezes == ao numero de clusters necessários
 
             bytes_lidos = 0 # variável de controle de bytes lidos
             dados_lidos = b""
 
-            posicao = int(lista_clusters[i]) # pega a posição absoluta do cluster a ser escrito
+            posicao = lista_clusters[i] * tamanho_cluster + offset_dados # pega a posição relativa do cluster a ser lido
+            #print(f"posicao: {posicao}")
 
             for posicao_leitura in range(0, tamanho_cluster, tamanho_setor):
                 

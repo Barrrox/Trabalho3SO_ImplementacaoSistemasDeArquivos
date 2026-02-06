@@ -66,19 +66,21 @@ class TestDiskManager(unittest.TestCase):
         """Testa a escrita de dados que ocupam mais de um setor."""
         tamanho_setor = self.fsm.get_bytes_por_setor()
         # Dados para ocupar exatamente 2 setores
-        dados_duplos = b"1" * tamanho_setor + b"2" * tamanho_setor
+        dados_1 = b"1" * tamanho_setor
+        dados_2 = b"2" * tamanho_setor
+        
         posicao_teste = tamanho_setor * 10 # Setor 10
 
         # Execução
-        bytes_escritos = self.dm.escrever_setor(posicao_teste, dados_duplos)
-        
-        # Deve ter escrito 1024 bytes (2 setores)
-        self.assertEqual(bytes_escritos, tamanho_setor * 2)
+        self.dm.escrever_setor(posicao_teste, dados_1)
+        self.dm.escrever_setor(posicao_teste+tamanho_setor, dados_2)
 
-        # Verificação da integridade
-        with open(self.caminho_particao, "rb") as f:
-            f.seek(posicao_teste)
-            self.assertEqual(f.read(tamanho_setor * 2), dados_duplos)
+        bytes_escritos1 = self.dm.ler_setor(posicao_teste)
+        bytes_escritos2 = self.dm.ler_setor(posicao_teste+tamanho_setor)
+
+        # Deve ter escrito 1024 bytes (2 setores)
+        self.assertEqual(bytes_escritos1, dados_1)
+        self.assertEqual(bytes_escritos2, dados_2)
 
     def test_ler_setor_fora_do_inicio(self):
         """Garante que a leitura respeita o offset/posicao informada."""

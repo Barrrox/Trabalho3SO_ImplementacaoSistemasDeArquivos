@@ -7,7 +7,7 @@ class interface:
         # comandos aceitos e número mínimo de argumentos
         self.comandos = {
             "deletar": 1,
-            "copiar": 2,
+            "copiar": 1,
             "listar": 0,
             "bootrecord": 0,
             "formatar": 4,

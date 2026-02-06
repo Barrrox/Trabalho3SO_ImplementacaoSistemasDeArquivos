@@ -18,9 +18,9 @@ class FileSystemManager:
         self.__setores_por_tabela  = 131072 # 4 bytes
         
         # valores variáveis
-        self.__setores_por_cluster = 2      # 1 byte
+        self.__setores_por_cluster = 8      # 1 byte
         self.__num_entradas_raiz   = 512    # 2 bytes
-        self.__endereco_particao = None
+        self.__endereco_particao = r"C:\Users\Usuario\Desktop\Unio\SO\TRAB3\Trabalho3SO_ImplementacaoSistemasDeArquivos\disco_virtual.bin"
         self.__tamanho_total_particao = 0
         self.__usuario = 1
 
@@ -288,26 +288,31 @@ class FileSystemManager:
     # args[0] = origem
     # args[1] = destino
         caminho_origem = args[0]
-        caminho_destino = args[1]
+
+        if len(args) == 2:
+            caminho_destino = args[1]
+            if not os.path.exists(caminho_destino):
+                error = ["[sys] - Arquivo de destino não encontrado"]
+                return error
 
         # Verifica se caminhos existem
         if not os.path.exists(caminho_origem):
             error = ["[sys] - Arquivo de origem não encontrado"]
             return error
         
-        if not os.path.exists(caminho_destino):
-            error = ["[sys] - Arquivo de destino não encontrado"]
-            return error
+
 
     # 1. TUDO ABAIXO É PARA ARQUIVOS, NÃO SUPORTA DIRETÓRIOS
 
         # copia EXTERNA: de DENTRO para FORA
-        if self.get_endereco_particao() in args[0]:
 
-            retorno = self.funcao_copiar_externa(caminho_origem, caminho_destino)
-            return retorno
+        if len(args) == 2:
+            if self.get_endereco_particao() in args[0]:
 
-        # copia INTERNA: de FORA para DENTRO
+                retorno = self.funcao_copiar_externa(caminho_origem, caminho_destino)
+                return retorno
+
+            # copia INTERNA: de FORA para DENTRO
         else:
             self.funcao_copiar_interna(caminho_origem)
 
@@ -374,6 +379,7 @@ class FileSystemManager:
                     
                     
                     if not escrita:
+                        print(f"escreveu errado")
                         #  escreveu errado, falta tratar
                         pass
                     # como tem espaço no disco e entrada no root, lemos o arquivo:
@@ -388,11 +394,12 @@ class FileSystemManager:
                     #     posicao = self.get_offset("area_dados") + entradas[i] * self.get_tamanho_cluster()
                     #     lista_clusters.append(posicao)
                     
-                    self.data_manager.alocar_cluster(lista_clusters, dados_arquivo)
-
+                    clusters = self.data_manager.alocar_cluster(lista_clusters, dados_arquivo)
+                    if clusters:
+                        print(f"clusters alocados: {clusters}")
 
                 # verificar se tem espaço disponível no root dir
-
+            
         else:
             error = ["[sys] - Não há espaço disponível no sistema. Operação abortada"]
             return error

@@ -35,18 +35,22 @@ class disk_manager:
         
         :param posicao: posicao de escrita no arquivo
         :param dados: dados a serem escritos, deve ter tamanho de 1 setor
+
+        :return dados_escritos: Quantidade de dados escritos
         """
 
         #endereco_particao = r"C:\Users\Usuario\Desktop\Unio\SO\TRAB3\Trabalho3SO_ImplementacaoSistemasDeArquivos\disco_virtual.bin"
         endereco_particao = self.file_sys_manager.get_endereco_particao()
-
+        #print(f"***********comeco escrever_setor***********")
         with open(endereco_particao, 'r+b') as f:
             f.seek(posicao)   
-            dados = f.write(dados)
-
+            #print(f"len f.write dos dados a escrever = {len(dados)}")
+            dados_escritos = f.write(dados)
+            #print(f"valor int dos dados a escritos = {dados_escritos}")
             if f.tell() == int(posicao) + self.tamanho_setor: # se escreveu certo, posicao inicial + tamanho de um setor é a mesma da posição de término
-                
-                return dados  # retorna a quantia de bytes escritos para rodar o teste  
+                #print(f"***********fim correto escrever_setor***********")
+                return dados_escritos  # retorna a quantia de bytes escritos para rodar o teste  
 
             else: # se não
+               # print(f"***********fim errado escrever_setor***********")
                 return False
