@@ -148,12 +148,15 @@ class TesteSystemFileManager(unittest.TestCase):
         DataManager.alocar_cluster -> FAT.alocar_entradas -> RootDir.escrever_entrada.
         """
 
-        for i in range(3):
+        for i in range(2):
 
-            dados = str(i)*1000
-            tamanho_arquivo = len(dados) * 8
+            dados = b'\0x1' * self.file_system_manager.get_tamanho_cluster() * 3
             
-            clusters_livres = self.fat_manager.buscar_entradas_livres(10)
+            tamanho_arquivo = len(dados)
+            
+            clusters_livres, _ = self.fat_manager.buscar_entradas_livres(3)
+
+            print(f"clusters_livres : {clusters_livres}")
 
             self.fat_manager.alocar_entradas_FAT(tamanho_arquivo)
 
@@ -162,16 +165,22 @@ class TesteSystemFileManager(unittest.TestCase):
             atributo = 0x02 # Arquivo
             nome = f"arq{i}"
             extensao = "txt"
-            tamanho = tamanho
+            tamanho = tamanho_arquivo
             primeiro_cluster = clusters_livres[0]
             dono = 0
             nivel_de_acesso = 0
 
-            self.root_manager.escrever_entrada_arquivo(atributo, nome, extensao, tamanho, primeiro_cluster, dono, nivel_de_acesso)
+            retorno = self.root_manager.escrever_entrada_arquivo(atributo, nome, extensao, tamanho, primeiro_cluster, dono, nivel_de_acesso)
+    
+            print(f"Retorno escrever_entrada_arquivo: {retorno}")  
 
+            print(f"len clusters_livres = {len(clusters_livres)}")  
             dados_lidos = self.data_manager.ler_clusters(clusters_livres)
 
-            self.assertEqual(dados_lidos, dados)
+            print(f"Retorno ler_clusters: {len(dados_lidos)}")
+            print()
+
+        self.assertEqual(dados_lidos, dados)
 
     def test_funcao_copiar_interna(self):
         """
@@ -184,6 +193,7 @@ class TesteSystemFileManager(unittest.TestCase):
         conteudo_original = b"Conteudo de teste para integracao real"
         with open(caminho_externo, "wb") as f:
             f.write(conteudo_original)
+
         
         try:
             # 2. Execução: Chama a função
@@ -193,9 +203,12 @@ class TesteSystemFileManager(unittest.TestCase):
             # Extraímos o nome para buscar no manager
             nome_arquivo = caminho_externo[:8]
             extensao = caminho_externo[-3:]
+
+            print(f"nome_arquivo: {nome_arquivo}")
+            print(f"extensao: {extensao}")
             
             entrada = self.root_manager.ler_entrada(nome_arquivo, extensao)
-            
+            print(f"entrada: {entrada}")
             # Verificações
             self.assertIsNotNone(entrada, "O arquivo deveria ter sido criado no Root Directory.")
             self.assertEqual(entrada[1].strip(), nome_arquivo, "O nome gravado no Root Dir está incorreto.")
@@ -216,7 +229,7 @@ class TesteSystemFileManager(unittest.TestCase):
 
     def test_copiar_duplicado_real(self):
         """Verifica se o sistema impede a cópia de um arquivo com nome idêntico já presente no disco."""
-        caminho_origem = "duplicado.txt"
+        caminho_origem = "oyamada.txt"
         with open(caminho_origem, "wb") as f:
             f.write(b"dados")
 

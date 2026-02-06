@@ -22,7 +22,7 @@ class FileSystemManager:
         self.__num_entradas_raiz   = 512    # 2 bytes
         self.__endereco_particao = None
         self.__tamanho_total_particao = 0
-        self.__usuario = None
+        self.__usuario = 1
 
         # Inicializa os managers que não tem dependências primeiro
         self.root_dir_manager = root_dir_manager(self)
@@ -332,21 +332,24 @@ class FileSystemManager:
         arquivo_str = caminho_origem.split("/")[-1].lower()
         nome_arquivo     = arquivo_str.split(".")[0].lower()
         extensao_arquivo = arquivo_str.split(".")[1].lower()
-    
+        
         # Le a entrada
-        arquivo_existe = self.root_dir_manager.ler_entrada(nome_arquivo, extensao_arquivo)
+        entrada = self.root_dir_manager.ler_entrada(nome_arquivo, extensao_arquivo)
 
-        if arquivo_existe:
-            error = ["[sys] - Arquivo já existe no sistema. Operação abortada"]
-            return error
+        if entrada != None:
+            erro = ['[sys] - Arquivo já existe no sistema. Operação abortada']
+           # print("Arquivo já existe")
+            return erro
+
+        if isinstance(entrada, str):
+            erro = entrada # retorna a string de erro providenciada pela função ler_entrada
+            return erro
         
         tamanho_arquivo = os.path.getsize(caminho_origem)
 
-        
         #************************************************************# começo da alocação
 
         if self.fat_manager.verificar_espaco_disponivel(tamanho_arquivo): # testa se tem espaço disponível para o arquivo
-            
             tamanho_cluster = self.get_tamanho_cluster()
 
             quantidade_de_clusters = math.ceil(tamanho_arquivo/tamanho_cluster)       
@@ -358,20 +361,35 @@ class FileSystemManager:
                 entrada_root_dir = self.root_dir_manager.procurar_entrada_livre() # testa se existe uma entrada disponível
                 
                 if entrada_root_dir != None: # se tiver 
+                  
                     entradas = self.fat_manager.alocar_entradas_FAT(tamanho_arquivo)
-                    escrita = self.root_dir_manager.escrever_entrada_arquivo(1, nome_arquivo, extensao_arquivo, tamanho_arquivo, entradas[0], dono=self.get_usuario, nivel_de_acesso=self.get_nivel_permissao)
+                    escrita = self.root_dir_manager.escrever_entrada_arquivo(
+                        atributo=0x02, 
+                        nome=nome_arquivo, 
+                        extensao=extensao_arquivo, 
+                        tamanho=tamanho_arquivo, 
+                        primeiro_cluster=entradas[0], 
+                        dono=self.get_usuario(), 
+                        nivel_de_acesso=self.get_nivel_permissao())
+                    
                     
                     if not escrita:
                         #  escreveu errado, falta tratar
                         pass
-                    
+                    # como tem espaço no disco e entrada no root, lemos o arquivo:
+
+                    with open(caminho_origem, 'rb') as f:
+                        dados_arquivo = f.read()
+
                     lista_clusters = []
+
+                    # # Pega a posição absoluta dos clusters
+                    # for i in range(len(entradas)):
+                    #     posicao = self.get_offset("area_dados") + entradas[i] * self.get_tamanho_cluster()
+                    #     lista_clusters.append(posicao)
                     
-                    for i in entradas:
-                        posicao = self.get_offset("area_dados") + bin(entradas[i] * self.get_tamanho_cluster)
-                        lista_clusters.append(posicao)
-                    
-                    self.data_manager.alocar_cluster(lista_clusters, tamanho_arquivo)
+                    self.data_manager.alocar_cluster(lista_clusters, dados_arquivo)
+
 
                 # verificar se tem espaço disponível no root dir
 
@@ -391,12 +409,15 @@ class FileSystemManager:
 
         """
         
-        # 1. Pegar o arquivo de origem do sistema
+        # 1. Pegar o nome do arquivo (Funciona em Windows e Linux)
+        # os.path.basename pega apenas "arquivo.txt" ignorando C:\ ou /home/
+        arquivo_str = os.path.basename(caminho_origem).lower()
 
-        # Pega nome e extensão do arquivo#
-        arquivo_str = caminho_origem.split("/")[-1].lower()
-        nome_arquivo     = arquivo_str.split(".")[0].lower()
-        extensao_arquivo = arquivo_str.split(".")[1].lower()
+        if "." not in arquivo_str:
+             return ["[sys] - Arquivo sem extensão não suportado"]
+        
+        nome_arquivo = arquivo_str.split(".")[0]
+        extensao_arquivo = arquivo_str.split(".")[1]
 
         # 1.1 Ler entrada no root dir
         entrada_arquivo = self.root_dir_manager.ler_entrada(nome_arquivo, extensao_arquivo)
@@ -410,7 +431,11 @@ class FileSystemManager:
         clusters_arquivo = self.fat_manager.pegar_clusters_arquivo(primeiro_cluster)
 
         # 1.3 ler arquivo via data manager
-        dados_arquivo = self.data_manager.ler_dados(clusters_arquivo)
+        dados_arquivo = self.data_manager.ler_clusters(clusters_arquivo)
+
+        # Se o data_manager retornar uma string (mensagem de erro), não podemos gravar
+        if isinstance(dados_arquivo, str) and "[sys]" in dados_arquivo:
+             return [dados_arquivo]
         
         # 2. Copiar buffer para o destino
         with open(caminho_destino, 'wb') as f:
@@ -450,7 +475,6 @@ class FileSystemManager:
         endereco_particao = args[0].strip('\'"')
         
         endereco_particao = os.path.normpath(endereco_particao)
-        print()
 
         #endereco_particao = args[0]
 
