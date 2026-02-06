@@ -248,7 +248,7 @@ class TesteSystemFileManager(unittest.TestCase):
         # Alocamos espaço e gravamos manualmente para garantir que o dado está lá
         entradas_fat = self.fat_manager.alocar_entradas_FAT(len(conteudo_original))
         self.data_manager.alocar_cluster(entradas_fat, conteudo_original)
-        self.root_manager.escrever_entrada_arquivo(1, nome, extensao, len(conteudo_original), entradas_fat[0], dono=0, nivel_de_acesso=0)
+        self.root_manager.escrever_entrada_arquivo(2, nome, extensao, len(conteudo_original), entradas_fat[0], dono=0, nivel_de_acesso=0)
 
         try:
             # 2. Execução: Copia de DENTRO para FORA
@@ -271,7 +271,7 @@ class TesteSystemFileManager(unittest.TestCase):
 
     def test_copiar_externa_arquivo_inexistente(self):
         """Verifica se a função retorna o erro correto ao tentar extrair um arquivo que não existe no binário."""
-        caminho_interno = "arquivo_que_nao_existe.txt"
+        caminho_interno = "arqteste.txt"
         caminho_destino = "saida_falha.txt"
 
         # Execução
