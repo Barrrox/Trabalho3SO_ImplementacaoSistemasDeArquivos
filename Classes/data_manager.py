@@ -25,10 +25,10 @@ class data_manager:
         """
         Docstring for alocar_cluster
         
-        :param lista_clusters: lista contendo as posições absolutas dos clusters alocados
+        :param lista_clusters: lista contendo as posições relativas dos clusters alocados
         :param dados: bytes a serem escritos, deve ser contínuo (sem separação cluser a cluster)
 
-        :return: print contendo a lista de posições alocadas 
+        :return: contendo a lista de posições alocadas 
         """
 
         tamanho_cluster = self.file_sys_manager.get_tamanho_cluster()
@@ -71,7 +71,7 @@ class data_manager:
         if bytes_escritos != len(dados):
             return (f"Erro na alocação do cluster. bytes_escritos != len(dados): {bytes_escritos} != {len(dados)}")
         else:
-            return (f"Clusters alocados com sucesso. Posicoes: {lista_clusters}")
+            return lista_clusters
 
     
     def liberar_cluster():
