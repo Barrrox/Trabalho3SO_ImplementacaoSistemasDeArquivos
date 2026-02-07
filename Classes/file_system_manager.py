@@ -397,6 +397,8 @@ class FileSystemManager:
         else:
             error = ["[sys] - Não há espaço disponível no sistema. Operação abortada"]
             return error
+        
+        self.fat_manager.sincronizar_fat_1_2()
     
     def funcao_copiar_externa(self, caminho_origem, caminho_destino):
         """
