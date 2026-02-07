@@ -22,7 +22,7 @@ class FileSystemManager:
         # valores variáveis
         self.__setores_por_cluster = 8      # 1 byte
         self.__num_entradas_raiz   = 512    # 2 bytes
-        self.__endereco_particao = r"C:\Users\Usuario\Desktop\Unio\SO\TRAB3\Trabalho3SO_ImplementacaoSistemasDeArquivos\disco_virtual.bin"
+        self.__endereco_particao = r"C:\Users\mathe\Documentos\Ciência da Computação\3 ano\SO\Trabalho 3 - Sistema de Arquivos\Parte 2 - Implementação\disco_virtual.bin"
         self.__tamanho_total_particao = 0
         self.__usuario = 1
 
@@ -360,12 +360,12 @@ class FileSystemManager:
         # Le a entrada
         entrada = self.root_dir_manager.ler_entrada(nome_arquivo, extensao_arquivo)
 
-        if entrada != None:
-            erro = ['[sys] - Arquivo já existe no sistema. Operação abortada']
-            return erro
-
         if isinstance(entrada, str):
-            erro = entrada
+                erro = entrada
+                return erro
+            
+        elif entrada != None:
+            erro = ['[sys] - Arquivo já existe no sistema. Operação abortada']
             return erro
         
         tamanho_arquivo = os.path.getsize(caminho_origem)
