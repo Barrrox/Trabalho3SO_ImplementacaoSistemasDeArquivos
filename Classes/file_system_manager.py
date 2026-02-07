@@ -387,9 +387,8 @@ class FileSystemManager:
                     with open(caminho_origem, 'rb') as f:
                         dados_arquivo = f.read()
                     
-                    clusters = self.data_manager.alocar_cluster(entradas, dados_arquivo)
-                    if clusters:
-                        print(f"clusters alocados: {clusters}")
+                    self.data_manager.alocar_cluster(entradas, dados_arquivo)
+                    
 
                 # verificar se tem espaço disponível no root dir
             
@@ -496,7 +495,9 @@ class FileSystemManager:
 
             total_clusters = tamanho_particao / bytes_por_setor / setores_por_cluster
 
-            bytes_por_entrada = 32 / 4 # 32 bits de entrada FAT -> 4 bytes
+            
+
+            bytes_por_entrada = 32 / 8 # 32 bits de entrada FAT -> 4 bytes
 
             tamannho_fat_bytes = total_clusters * math.ceil(bytes_por_entrada)
 
@@ -510,6 +511,24 @@ class FileSystemManager:
             self.set_endereco_particao(endereco_particao)
             self.set_tamanho_total_particao(int(tamanho_particao))
 
+            print(f"tamanho_particao: {tamanho_particao}")
+            print(f"bytes_por_setor: {bytes_por_setor}")
+            print(f"total_clusters: {total_clusters}")
+            print(f"setores_por_tabela: {setores_por_tabela}")
+            print(f"setores_por_cluster: {setores_por_cluster}")
+            print(f"num_entradas_raiz: {num_entradas_raiz}")
+            print(f"endereco_particao: {endereco_particao}")
+            print(f"tamanho_particao (bytes): {tamanho_particao}")
+
+            print(f"offsets:")
+            print(f"  boot_record : {self.get_offset("boot_record")}")
+            print(f"  fat1 : {self.get_offset("fat1")}")
+            print(f"  fat2 : {self.get_offset("fat2")}")
+            print(f"  root_dir : {self.get_offset("root_dir")}")
+            print(f"  area_dados : {self.get_offset("area_dados")}")
+            
+            
+            
             # 5. Execução da formatação
             formatador = Formatador()
             formatador.formatar_completo(
