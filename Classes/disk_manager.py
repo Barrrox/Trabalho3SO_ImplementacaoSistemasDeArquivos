@@ -1,8 +1,17 @@
 import math
 
 class disk_manager:
+    """
+    Gerencia o acesso direto ao ficheiro da partição (disco virtual),
+    realizando operações de leitura e escrita ao nível de setor.
+    """
     
     def __init__(self, file_sys_manager):
+        """
+        Inicializa o gerenciador de disco com os parâmetros físicos da partição.
+        
+        :param file_sys_manager: Instância do FileSystemManager para acesso a configurações.
+        """
         self.file_sys_manager = file_sys_manager
 
         self.tamanho_setor = self.file_sys_manager.get_bytes_por_setor()
@@ -13,44 +22,38 @@ class disk_manager:
  
     def ler_setor(self, posicao):
         """
-        Docstring for ler_setor
+        Realiza a leitura de um único setor no endereço especificado.
         
-        :param posicao: Posição para iniciar a leitura do setor
-        :return: string com os dados lidos
+        :param posicao: int: Endereço absoluto em bytes para o início da leitura.
+        :return: bytes: Conteúdo binário lido do setor.
         """
 
-        #endereco_particao = r"C:\Users\Usuario\Desktop\Unio\SO\TRAB3\Trabalho3SO_ImplementacaoSistemasDeArquivos\disco_virtual.bin"
         endereco_particao = self.file_sys_manager.get_endereco_particao()
 
         with open(endereco_particao, 'r+b') as f:
             f.seek(posicao)
-
-            lido = f.read(self.tamanho_setor)  # lê 1 setor # talvez acessar uma variavel da classe a cada leitura cause lentidão, não sei
+            lido = f.read(self.tamanho_setor)
         
         return lido
 
     def escrever_setor(self, posicao, dados): 
         """
-        Docstring for escrever_setor
+        Grava uma sequência de bytes num setor específico.
         
-        :param posicao: posicao de escrita no arquivo
-        :param dados: dados a serem escritos, deve ter tamanho de 1 setor
-
-        :return dados_escritos: Quantidade de dados escritos
+        :param posicao: int: Endereço absoluto em bytes para o início da escrita.
+        :param dados: bytes: Dados a serem gravados (deve ter o tamanho exato de um setor).
+        :return: int ou bool: Quantidade de bytes escritos ou False se houver falha de integridade.
         """
 
-        #endereco_particao = r"C:\Users\Usuario\Desktop\Unio\SO\TRAB3\Trabalho3SO_ImplementacaoSistemasDeArquivos\disco_virtual.bin"
         endereco_particao = self.file_sys_manager.get_endereco_particao()
-        #print(f"***********comeco escrever_setor***********")
+        
         with open(endereco_particao, 'r+b') as f:
             f.seek(posicao)   
-            #print(f"len f.write dos dados a escrever = {len(dados)}")
             dados_escritos = f.write(dados)
-            #print(f"valor int dos dados a escritos = {dados_escritos}")
-            if f.tell() == int(posicao) + self.tamanho_setor: # se escreveu certo, posicao inicial + tamanho de um setor é a mesma da posição de término
-                #print(f"***********fim correto escrever_setor***********")
-                return dados_escritos  # retorna a quantia de bytes escritos para rodar o teste  
-
-            else: # se não
-               # print(f"***********fim errado escrever_setor***********")
+            
+            # Validação: verifica se a posição atual do ponteiro após a escrita 
+            # corresponde à posição inicial somada ao tamanho do setor esperado.
+            if f.tell() == int(posicao) + self.tamanho_setor:
+                return dados_escritos
+            else:
                 return False
