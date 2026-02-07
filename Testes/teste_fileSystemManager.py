@@ -95,7 +95,7 @@ class TesteSystemFileManager(unittest.TestCase):
         mock_fmt_instance = MockFormatador.return_value
         
         # Execução
-        endereco = "disco_virtual.bin"
+        endereco = "disco_virtual_teste.bin"
         retorno = self.file_system_manager.comando_formatar(endereco, "512", "4", "256")
         
         # Verificações
@@ -103,6 +103,9 @@ class TesteSystemFileManager(unittest.TestCase):
         self.assertEqual(retorno, retorno_esperado)
         self.assertEqual(self.file_system_manager.get_bytes_por_setor(), 512)
         self.assertEqual(self.file_system_manager.get_setores_por_cluster(), 4)
+
+        if os.path.exists(endereco):
+            os.remove(endereco)
 
     def test_comando_deletar_sucesso(self):
         """Testa a deleção de um arquivo com sucesso"""
