@@ -3,10 +3,16 @@ import math
 class FAT_table_manager:
 
     def __init__(self, file_sys_manager):
+        """
+        Gerencia a File Allocation Table (FAT), controlando quais clusters estão livres,
+        alocados ou pertencem a uma cadeia de um arquivo.
+        
+        :param file_sys_manager: Instância do FileSystemManager para acessar configurações globais.
+        """
         self.file_sys_manager = file_sys_manager
         self.data_manager = file_sys_manager.data_manager
         self.root_manager = file_sys_manager.root_dir_manager
-        self.tamanho_entrada = 4
+        self.tamanho_entrada = 4 # Cada entrada na FAT ocupa 4 bytes
         self.offset_fat = self.file_sys_manager.get_offset("fat1")
         self.offset_fat2 = self.file_sys_manager.get_offset("fat2")
         self.FAT_EOF = 0xFFFFFFFF
@@ -15,14 +21,10 @@ class FAT_table_manager:
     def verificar_espaco_disponivel(self, tamanho_arquivo):      
         
         """
-        Verifica se há espaço disponível na tabela FAT para alocar um arquivo de tamanho 'tamanho_arquivo'
+        Verifica se há clusters livres suficientes na tabela FAT para comportar o arquivo.
 
-        Parâmetros:
-            tamanho_arquivo: tamanho do arquivo a ser alocado
-
-        Retorna:
-            bool: True se houver espaço disponível, False caso contrário
-            
+        :param tamanho_arquivo: Tamanho total do arquivo em bytes.
+        :return: bool: True se houver espaço disponível, False caso contrário.
         """
 
         tamanho_cluster = self.file_sys_manager.get_tamanho_cluster()
@@ -38,14 +40,11 @@ class FAT_table_manager:
 
     def buscar_entradas_livres(self, numero_entradas): # pega a posição relativa de uma entrada FAT livre
         """
-        Procura entradas livres na partição e retorna suas posições relativas
+        Varre a tabela FAT em busca de entradas marcadas como livres (valor 0).
 
-        Parâmetros:
-            numero_entradas: número de entradas requeridas
-
-        Retorna:
-            entradas: lista com as posições relativas das entradas livres encontradas 
-            
+        :param numero_entradas: Quantidade de clusters necessários.
+        :return: entradas: lista com os índices (posições relativas) dos clusters livres.
+        :return: error: String contendo mensagem de erro ou None se sucesso.
         """
 
         endereco_particao = self.file_sys_manager.get_endereco_particao()
@@ -90,11 +89,11 @@ class FAT_table_manager:
 
     def alocar_entradas_FAT(self, tamanho_arquivo) :
         """
-        Aloca entradas para o tamanho requisitado para o arquivo
+        Marca as entradas na FAT como ocupadas, criando uma cadeia (chain) onde cada 
+        entrada aponta para o próximo cluster do arquivo.
 
-        :param tamanho_arquivo: tamanho em bytes do arquivo a ser alocado
-
-        :return entradas: Uma lista com o valor relativo das entradas alocadas
+        :param tamanho_arquivo: tamanho em bytes do arquivo a ser alocado.
+        :return: Uma lista com os índices dos clusters alocados ou False em caso de erro.
         """
         endereco_particao = self.file_sys_manager.get_endereco_particao()
         tamanho_cluster = self.file_sys_manager.get_tamanho_cluster()
@@ -115,8 +114,8 @@ class FAT_table_manager:
 
             for i in range(len(entradas)): # posiciona o cursor na posição absoluta da entrada FAT
 
-                posicao = self.offset_fat + (entradas[i] * 4)  # Cada entrada FAT tem 4 bytes
-                #posicao = posicao.to_bytes(4, byteorder='little')
+                # Calcula a posição física somando o início da FAT com o índice do cluster * 4 bytes
+                posicao = self.offset_fat + (entradas[i] * 4)  
                 f.seek(posicao)
 
                 if i == len(entradas)-1: # se for o final da chain marca como EOF
@@ -134,7 +133,12 @@ class FAT_table_manager:
 
     
     def desalocar_arquivo(self, primeiro_cluster):
-        # desaloca os clusters de um arquivo alocado na tabela
+        """
+        Percorre a cadeia de clusters de um arquivo na FAT e marca todas as entradas como livres (0).
+
+        :param primeiro_cluster: O índice do primeiro cluster do arquivo.
+        :return: int: Retorna -1 após a conclusão.
+        """
         endereco_particao = self.file_sys_manager.get_endereco_particao()
 
         livre = 0x00000000
@@ -146,10 +150,10 @@ class FAT_table_manager:
                 posicao = self.offset_fat + (cluster_atual * 4) # Entrada de 4bytes
                 file.seek(posicao) # posiciona o cursor na entrada
 
-                proximo_cluster = int.from_bytes(file.read(4), 'little') # lê os bytes da posição (littlend) e transforma pra inteiro
+                proximo_cluster = int.from_bytes(file.read(4), 'little') # lê os bytes da posição para saber qual o próximo
 
-                file.seek(posicao) # volta para a posicao do cluster
-                file.write(livre.to_bytes(4, 'little')) # redefine o cluster para livre
+                file.seek(posicao) # volta para a posicao do cluster para sobrescrevê-lo
+                file.write(livre.to_bytes(4, 'little')) # redefine o cluster para livre (0)
 
                 if proximo_cluster == fim: # cluster = EOF
                     break
@@ -159,11 +163,14 @@ class FAT_table_manager:
         return -1
 
     def pegar_clusters_arquivo(self, primeiro_cluster):
-        # Encontra todos os clusters de um arquivo
-        # Retorna: lista com as posições relativas dos clusters desse arquivo 
-        # ex : lista = [12, 54]
+        """
+        Segue a cadeia de clusters na FAT a partir de um ponto inicial para reconstruir a lista de índices.
 
-        visitados = set() # proteção contra loop infinito
+        :param primeiro_cluster: O índice inicial do arquivo.
+        :return: list: Lista com as posições relativas (índices) dos clusters que compõem o arquivo.
+        """
+
+        visitados = set() # proteção contra loop infinito (corrupção de dados na FAT)
         endereco_particao = self.file_sys_manager.get_endereco_particao()
         
         cluster_chain = []
@@ -173,41 +180,43 @@ class FAT_table_manager:
         # abre o storage na posicao do primeiro cluster:
         with open(endereco_particao, 'r+b') as f:
 
-            while True: # 
+            while True: 
                 
                 if cluster_atual in visitados:
                     raise RuntimeError("Loop detectado na FAT")
                 
-                visitados.add(cluster_atual) # salva o caminho
-                cluster_chain.append(cluster_atual) # salva o cluster atual
+                visitados.add(cluster_atual) # salva o caminho para verificação de loop
+                cluster_chain.append(cluster_atual) # salva o cluster atual na lista de retorno
 
                 posicao_fat = self.offset_fat + (cluster_atual * self.tamanho_entrada) # desloca o leitor ate a entrada atual
                 f.seek(posicao_fat)
 
-                entrada_bytes = f.read(self.tamanho_entrada) # le o conteudo da entrada
+                entrada_bytes = f.read(self.tamanho_entrada) # le o conteudo da entrada (ponteiro para o próximo)
 
-                proximo_cluster = int.from_bytes(entrada_bytes, 'little') # salva
+                proximo_cluster = int.from_bytes(entrada_bytes, 'little') 
 
-                if proximo_cluster == 0x00000000: # testa se está vazio (erro)
+                if proximo_cluster == 0x00000000: # testa se está vazio (erro de integridade)
                     return (f"[sys] Erro na leitura da cluster chain: cluster {cluster_atual} aponta para entrada livre")
             
 
-                elif proximo_cluster == 0xFFFFFFFF: # se a entrada atual for a ultima, retorna
+                elif proximo_cluster == 0xFFFFFFFF: # se a entrada atual for a ultima (EOF), retorna a lista
                     return cluster_chain
 
                 cluster_atual = proximo_cluster # continua a chain
 
 
     def sincronizar_fat_1_2(self):
-        # Sincroniza as tabelas FAT
+        """
+        Realiza a cópia idêntica da FAT1 para a FAT2 para manter a redundância do sistema.
+        """
         endereco_particao = self.file_sys_manager.get_endereco_particao()
         bytesPorSetor = self.file_sys_manager.get_bytes_por_setor()
         setoresPorTabela = self.file_sys_manager.get_setores_por_tabela()
-        size = bytesPorSetor * setoresPorTabela # calcula o tamanho da tabela fat
+        size = bytesPorSetor * setoresPorTabela # calcula o tamanho da tabela fat em bytes
 
         with open(endereco_particao, 'r+b') as file:
             file.seek(self.offset_fat)
-            dados = file.read(size) # copia os dados da fat 1
+            dados = file.read(size) # copia os dados integrais da fat 1
 
             file.seek(self.offset_fat2) 
             file.write(dados) # cola os dados na fat 2
