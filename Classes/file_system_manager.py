@@ -198,41 +198,39 @@ class FileSystemManager:
         return False
 
 #*******************************************************************************************************#   
-    def ler_input_interface(self, input_string):
+    def ler_input_interface(self, input_string, callback=None):
         """
         Processa o input da interface.
-        
-        1. verifica se é comando válido
-        2. envia para disparar_comando
-        
         :param input_string: Comando completo digitado.
-        :return: list: Resultado da operação ou erro.
+        :param callback: Função para atualização de progresso visual.
         """
-
         strings_unitarias = input_string.split()
 
         if not strings_unitarias:
             erro = ["Comando inválido ou não existente!"]
             return erro
         else:
-            return self.disparar_comando(strings_unitarias)    
+            # Passa o callback adiante
+            return self.disparar_comando(strings_unitarias, callback) 
 
 #*******************************************************************************************************# 
-    def disparar_comando(self, stringComando):
+    def disparar_comando(self, stringComando, callback=None): # Adicionado parametro
         """
-        Executa dinamicamente o método correspondente ao comando (Reflection).
-        Ex: "deletar" -> comando_deletar
-        
-        :param stringComando: Lista [comando, arg1, arg2...]
+        Executa dinamicamente o método correspondente.
+        Passa o callback apenas se o comando for 'copiar' ou 'formatar'.
         """
-        
         comando = stringComando[0]
         argumentos = stringComando[1:]
         
         comando_requerido = f"comando_{comando}"
         if hasattr(self, comando_requerido):
             metodo = getattr(self, comando_requerido)
-            return metodo(*argumentos)
+            
+            # Lógica para injetar o callback apenas onde é necessário
+            if callback and comando in ["copiar", "formatar"]:
+                return metodo(*argumentos, callback=callback)
+            else:
+                return metodo(*argumentos)
         else:
             erro = ["Comando inválido ou não existente!"]
             return erro
@@ -305,7 +303,7 @@ class FileSystemManager:
         return bootrecord
 
 #*******************************************************************************************************#
-    def comando_copiar(self, *args):
+    def comando_copiar(self, *args, callback=None):
         """
         Gerencia cópia de arquivos.
         
@@ -339,13 +337,13 @@ class FileSystemManager:
             if not os.path.exists(caminho_origem):
                 return ["[sys] - Arquivo de origem não encontrado"]
             
-            retorno = self.funcao_copiar_interna(caminho_origem)
-            
+            retorno = self.funcao_copiar_interna(caminho_origem, callback=callback) 
+
             if retorno is None:
                  return [f"[sys] - Arquivo '{caminho_origem}' importado com sucesso."]
             return retorno
 
-    def funcao_copiar_interna(self, caminho_origem):
+    def funcao_copiar_interna(self, caminho_origem, callback=None):
         """
         Importa um arquivo do SO para o disco virtual.
         :param caminho_origem: Path absoluto no SO.
@@ -405,7 +403,7 @@ class FileSystemManager:
                     with open(caminho_origem, 'rb') as f:
                         dados_arquivo = f.read()
                     
-                    self.data_manager.alocar_cluster(entradas, dados_arquivo)
+                    self.data_manager.alocar_cluster(entradas, dados_arquivo, callback=callback)
                     
         else:
             error = ["[sys] - Não há espaço disponível no sistema. Operação abortada"]
@@ -473,7 +471,7 @@ class FileSystemManager:
         return resultado
 
 #*******************************************************************************************************#    
-    def comando_formatar(self, *args):
+    def comando_formatar(self, *args, callback=None):
         """
         Formata a partição e atualiza os parâmetros do sistema.
         args: (endereco, bytes_setor, setores_cluster, num_entradas)
@@ -520,7 +518,8 @@ class FileSystemManager:
                 int(bytes_por_setor), 
                 int(setores_por_tabela), 
                 int(setores_por_cluster), 
-                int(num_entradas_raiz)
+                int(num_entradas_raiz),
+                callback=callback
             )
             
             self.set_endereco_particao(endereco_particao)

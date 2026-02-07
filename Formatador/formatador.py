@@ -7,37 +7,38 @@ import os
 class Formatador:
 
 
-    def zerar(self, caminho_particao : str, tamanho_particao):
+# Adicione callback=None
+    def zerar_mock(self, caminho_particao, tamanho_particao, callback=None):
         """
-        Define se a execução será em um arquivo mock ou num pendrive no linux
-        Não funciona para pendrives no Windows
-        
-        :param caminho_particao: caminho absoluto para a particao
-        :param tamanho_particao: tamanho da particao em bytes
-        
+        Zera um arquivo mock escrevendo bloco a bloco para permitir visualização do progresso.
         """
-
-        # Se o caminho da partição tem o "/dev/" então está no linux
-        if caminho_particao.startswith("/dev/"):
-            self.zerar_pendrive(caminho_particao, tamanho_particao)
-        else:
-            self.zerar_mock(caminho_particao, tamanho_particao)
-
-
-
-    def zerar_mock(self, caminho_particao, tamanho_particao):
-        """
-        Zera um arquivo mock para os testes no windows
-        
-        :param caminho_particao: caminho absoluto para a particao
-        :param tamanho_particao: tamanho da particao em bytes
-        """
+        tamanho_bloco = 1024 * 1024 # 1 MB
+        import math
+        total_blocos = math.ceil(tamanho_particao / tamanho_bloco)
 
         with open(caminho_particao, 'wb') as f:
-            f.seek(tamanho_particao - 1)
-            f.write(b'\x00')
+            for i in range(total_blocos):
+                # Escreve 1MB de zeros
+                f.write(b'\x00' * tamanho_bloco)
+                
+                # Atualiza a barra
+                if callback:
+                    percentual = ((i + 1) / total_blocos) * 100
+                    callback(percentual)
+            
+            # Garante que o tamanho final seja exato (corta excesso do último bloco se houver)
+            f.truncate(tamanho_particao)
 
         return
+    
+    # Atualize a assinatura do zerar
+    def zerar(self, caminho_particao : str, tamanho_particao, callback=None):
+        if caminho_particao.startswith("/dev/"):
+            # O zerar_pendrive usa DD, que tem progresso próprio do linux, 
+            # não passamos o callback python para ele.
+            self.zerar_pendrive(caminho_particao, tamanho_particao)
+        else:
+            self.zerar_mock(caminho_particao, tamanho_particao, callback)
     
     def zerar_pendrive(self, caminho_particao, tamanho_particao):
         """
@@ -95,14 +96,12 @@ class Formatador:
         # def escreve_boot_record(self, arquivo, bytes_por_setor, setores_por_tabela, setores_por_cluster, num_entradas_raiz ):
 
 
-    def formatar_completo(self, caminho_particao, tamanho_particao, bytes_por_setor, setores_por_tabela, setores_por_cluster, num_entradas_raiz):
-        # formata o armazenamento completamente para FAT48
-        # boot record | tabela FAT 1 | tabela FAT 2 | root dir | área de dados
-
-        # Preenche com zeros
-        self.zerar(caminho_particao, tamanho_particao) 
+# Atualize a assinatura do formatar_completo
+    def formatar_completo(self, caminho_particao, tamanho_particao, bytes_por_setor, setores_por_tabela, setores_por_cluster, num_entradas_raiz, callback=None):
         
-        # Escreve as inforamações no boot record
+        # Repassa o callback para o zerar
+        self.zerar(caminho_particao, tamanho_particao, callback) 
+        
         self.escreve_boot_record(caminho_particao, bytes_por_setor, setores_por_tabela, setores_por_cluster, num_entradas_raiz)
         
-        return    
+        return

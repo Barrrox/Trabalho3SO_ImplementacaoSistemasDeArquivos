@@ -29,7 +29,7 @@ class data_manager:
             # Retorna via yield uma lista contendo os bytes do setor
             yield setor
 
-    def alocar_cluster(self, lista_clusters, dados):
+    def alocar_cluster(self, lista_clusters, dados, callback=None):
         """        
         :param lista_clusters: lista contendo as posições relativas dos clusters alocados
         :param dados: bytes a serem escritos, deve ser contínuo (sem separação cluster a cluster)
@@ -77,6 +77,10 @@ class data_manager:
                 # ajusta o offset de escrita para a posição do próximo setor
                 escritas_setor += 1
                 posicao_escrita = posicao + (escritas_setor * self.disk_manager.tamanho_setor)
+            
+            if callback:
+                percentual = ((i + 1) / numero_de_escritas) * 100
+                callback(percentual) # Notifica a interface
 
         if bytes_escritos < len(dados):
             return f"Erro na alocação do cluster. bytes_escritos != len(dados): {bytes_escritos} != {len(dados)}"

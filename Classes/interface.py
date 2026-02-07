@@ -69,7 +69,7 @@ class interface:
                 continue
 
             # Processa o input através do gestor do sistema de arquivos
-            resultado = self.manager.ler_input_interface(entrada)
+            resultado = self.manager.ler_input_interface(entrada, callback=self.exibir_progresso)
             self.exibir(resultado)
 
     def mostrar_ajuda(self):
@@ -103,3 +103,11 @@ class interface:
 
         else:
             print(resultado)
+
+    def exibir_progresso(self, percentual):
+        largura_barra = 40
+        progresso = int((percentual / 100) * largura_barra)
+        barra = "█" * progresso + "-" * (largura_barra - progresso)
+        print(f"\r[progresso] |{barra}| {percentual:.2f}%", end="", flush=True)
+        if percentual >= 100:
+            print() # Pula linha ao terminar
