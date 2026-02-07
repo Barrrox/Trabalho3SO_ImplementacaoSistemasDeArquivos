@@ -222,27 +222,33 @@ class FileSystemManager:
 #*******************************************************************************************************#   
     # deletar nome_arqv
     def comando_deletar(self, *args):
-        arquivo = args[0].lower()
-        erro = ["[sys] - Arquivo não encontrado"]
-
-        if not arquivo:
-            return erro
         
-        entrada = self.root_dir_manager.ler_entrada(arquivo) # procura entrada do arquivo
+        if not args:
+            return ["[sys] - Erro: Informe o arquivo a ser deletado."]
+            
+        arquivo_str = args[0].lower()
+        
+        # Validação de extensão
+        if "." not in arquivo_str:
+            return ["[sys] - Informe o nome e a extensão (ex: arquivo.txt)"]
+
+        # 1. Separa Nome e Extensão (Correção do erro atual)
+        nome_arquivo = arquivo_str.split(".")[0]
+        extensao_arquivo = arquivo_str.split(".")[1]
+        
+        entrada = self.root_dir_manager.ler_entrada(nome_arquivo, extensao_arquivo) # procura entrada do arquivo
 
         if not entrada:
-            return erro
+            return ["[sys] - Arquivo não encontrado"]
 
         # entrada = [atributo, nome, extensao, tamanho, dono, nivel_de_acesso, primeiro_cluster]
         primeiro_cluster = entrada[6]
 
-        self.fat_manager.desalocar_arquivo(primeiro_cluster) # desaloca os clusters da tabela fat
-        self.root_dir_manager.desalocar_entrada(arquivo) # marca a entrada como 0x01 no root
-        self.fat_manager.sincronizar_fat(primeiro_cluster) # sincroniza fat 1 com a 2
+        self.fat_manager.desalocar_arquivo(primeiro_cluster) 
+        self.root_dir_manager.desalocar_entrada_arquivo(nome_arquivo) 
+        self.fat_manager.sincronizar_fat_1_2()
 
-        resultado = [f"arquivo {arquivo} excluido"]
-
-        return resultado
+        return [f"arquivo {arquivo_str} excluido"]
 #*******************************************************************************************************#
     def comando_bootrecord(self):
 

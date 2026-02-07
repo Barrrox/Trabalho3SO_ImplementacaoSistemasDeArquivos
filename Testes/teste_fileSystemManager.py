@@ -115,21 +115,21 @@ class TesteSystemFileManager(unittest.TestCase):
         
         # Simula que o arquivo existe 
         # Formato: [atributo, nome, extensao, tamanho, dono, nivel_de_acesso, primeiro_cluster]
-        # O cluster 10 é o que deve ser passado para a FAT
         self.file_system_manager.root_dir_manager.ler_entrada.return_value = [0x00, "teste", "txt", 1024, 1, 1, 10]
         
         # Execução
-        nome_arquivo = "teste.txt"
-        retorno = self.file_system_manager.comando_deletar(nome_arquivo)
+        nome_completo = "teste.txt"
+        retorno = self.file_system_manager.comando_deletar(nome_completo)
         
         # Verificações
-        retorno_esperado = [f"arquivo {nome_arquivo} excluido"]
+        retorno_esperado = [f"arquivo {nome_completo} excluido"]
         self.assertEqual(retorno, retorno_esperado)
         
-        # Verifica se os métodos de "limpeza" foram chamados com os dados certos
+        # Verifica se os métodos de "limpeza" foram chamados com os dados certos:
+        
         self.file_system_manager.fat_manager.desalocar_arquivo.assert_called_once_with(10)
-        self.file_system_manager.root_dir_manager.desalocar_entrada.assert_called_once_with(nome_arquivo)
-        self.file_system_manager.fat_manager.sincronizar_fat.assert_called_once_with(10)
+        self.file_system_manager.root_dir_manager.desalocar_entrada_arquivo.assert_called_once_with("teste")
+        self.file_system_manager.fat_manager.sincronizar_fat_1_2.assert_called_once()
 
     def test_comando_deletar_arquivo_nao_encontrado(self):
         """Testa o erro ao tentar deletar um arquivo que não existe no root dir"""
