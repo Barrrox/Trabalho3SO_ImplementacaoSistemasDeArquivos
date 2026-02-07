@@ -73,8 +73,8 @@ class data_manager:
                 posicao_escrita = posicao + (escritas_setor * self.disk_manager.tamanho_setor)
 
 
-        if bytes_escritos != len(dados):
-            return (f"Erro na alocação do cluster. bytes_escritos != len(dados): {bytes_escritos} != {len(dados)}")
+        if bytes_escritos < len(dados):
+            return f"Erro na alocação do cluster. bytes_escritos != len(dados): {bytes_escritos} != {len(dados)}"
         else:
             return lista_clusters
 
