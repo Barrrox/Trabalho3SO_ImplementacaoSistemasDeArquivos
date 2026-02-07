@@ -8,16 +8,18 @@ from Classes.data_manager import data_manager
 from Formatador.formatador import Formatador
 
 class FileSystemManager:
+    """
+    Classe orquestradora do Sistema de Arquivos.
+    Gerencia a comunicação entre a Interface (CLI) e os gerenciadores de baixo nível
+    (Disk, FAT, RootDir, Data). Mantém o estado atual da partição montada.
+    """
     
     def __init__(self):
-    # Inicializa os atributos do Boot Record
-    # self._<atributo> representa um atributo PRIVATE  # FIX: Ajustar pra ler do formator
-       
-       # valores fixos
+        # Valores padrão (Boot Record)
         self.__bytes_por_setor     = 512    # 2 bytes
         self.__setores_por_tabela  = 131072 # 4 bytes
         
-        # valores variáveis
+        # Valores variáveis
         self.__setores_por_cluster = 8      # 1 byte
         self.__num_entradas_raiz   = 512    # 2 bytes
         self.__endereco_particao = r"C:\Users\Usuario\Desktop\Unio\SO\TRAB3\Trabalho3SO_ImplementacaoSistemasDeArquivos\disco_virtual.bin"
@@ -35,36 +37,46 @@ class FileSystemManager:
 #*******************************************************************************************************#
     def get_bytes_por_setor(self):
         """
-        retorna o número de bytes por setor
+        :return: int: O número de bytes por setor configurado.
         """
-
         return self.__bytes_por_setor
 #*******************************************************************************************************#
     def get_setores_por_tabela(self):
+        """
+        :return: int: O número de setores ocupados por uma tabela FAT.
+        """
         return self.__setores_por_tabela
 #*******************************************************************************************************#
     def get_setores_por_cluster(self):
+        """
+        :return: int: A quantidade de setores que compõem um cluster.
+        """
         return self.__setores_por_cluster 
 #*******************************************************************************************************#
     def get_num_entradas_raiz(self):
         """
-        retorna o número de entradas do root dir
+        :return: int: O número máximo de entradas permitidas no diretório raiz.
         """
         return self.__num_entradas_raiz
 #*******************************************************************************************************# 
     def get_endereco_particao(self):
-        """Retorna o caminho do arquivo .bin atual"""
+        """
+        :return: str: O caminho absoluto do arquivo .bin (disco virtual).
+        """
         return self.__endereco_particao
 #*******************************************************************************************************#    
     def get_tamanho_total_particao(self):
-        """Retorna o tamanho total da particao em bytes"""
+        """
+        :return: int: O tamanho total da partição em bytes.
+        """
         return self.__tamanho_total_particao
 #*******************************************************************************************************# 
     def get_total_clusters(self):
         """
-        Retorna o total de clusters na partição
+        Calcula o total de clusters disponíveis na partição.
+        
+        :return: int: Número total de clusters.
         """
-
         tamanho_particao = self.get_tamanho_total_particao()
         bytes_por_setor = self.get_bytes_por_setor()
         setores_por_cluster = self.get_setores_por_cluster()
@@ -75,8 +87,10 @@ class FileSystemManager:
 #*******************************************************************************************************# 
     def get_offset(self, secao):
         """
-        Retorna o offset em binario de uma seção do BootRecord. O parâmetro seção pode deve ser
-        uma das seguintes strings: "boot_record", "fat1", "fat2", "root_dir", "area_dados"
+        Retorna o deslocamento (offset) em bytes onde inicia uma seção específica do disco.
+        
+        :param secao: pode ser qualquer string dentro dessa lista: ("boot_record", "fat1", "fat2", "root_dir", "area_dados")
+        :return: int: Offset em bytes ou None se a seção for inválida.
         """
         bytes_setor = self.get_bytes_por_setor()
         setores_por_tabela = self.get_setores_por_tabela()
@@ -104,7 +118,10 @@ class FileSystemManager:
 #*******************************************************************************************************#
     def get_tamanho_cluster(self):
         """
-        retorna o tamanho em bytes de 1 cluster na configuração atual
+        Calcula o tamanho de um cluster baseado na configuração atual.
+        Fórmula: bytes_por_setor * setores_por_cluster
+        
+        :return: int: Tamanho do cluster em bytes.
         """
 
         tamanho_setor = self.get_bytes_por_setor()
@@ -144,8 +161,9 @@ class FileSystemManager:
 #*******************************************************************************************************#
     def set_tamanho_total_particao(self, tamanho):
         """
-        Define o tamanho total da partição em bytes
-        Garante que o tamanho seja um valor numérico positivo.
+        Define o tamanho total da partição.
+        
+        :param tamanho: int ou float (será tratado como bytes). Deve ser >= 0.
         """
         if isinstance(tamanho, (int, float)) and tamanho >= 0:
             self.__tamanho_total_particao = tamanho
@@ -153,17 +171,19 @@ class FileSystemManager:
 #*******************************************************************************************************#    
     def set_bytes_por_setor(self, bytes_por_setor):
         """
-        retorna o número de bytes por setor
+        Define a quantidade de bytes por setor.
+        :param bytes_por_setor: int
         """
-
         self.__bytes_por_setor = bytes_por_setor
 
         return    
 #*******************************************************************************************************#
     def set_endereco_particao(self, endereco):
         """
-        Define o endereço da partição. 
-        Valida se o caminho é uma string e se o arquivo realmente existe.
+        Define o endereço do arquivo de disco.
+        
+        :param endereco: str: Caminho do arquivo.
+        :return: bool: True se o endereço for uma string válida, False caso contrário.
         """
         if isinstance(endereco, str):
             self.__endereco_particao = endereco
@@ -172,11 +192,10 @@ class FileSystemManager:
 #*******************************************************************************************************#   
     def ler_input_interface(self, input_string):
         """
-        Lê o input da interface do usuário
-   
-        1. verifica se a string é um comando válido
-        2. caso válido, envia a string para o método disparar_comando
-        3. caso inválido, retorna mensagem de comando incorreto
+        Processa a entrada bruta do usuário e encaminha para o disparador.
+        
+        :param input_string: str: O comando completo digitado (ex: "copiar a.txt b.txt")
+        :return: list: Lista contendo strings de feedback ou mensagens de erro.
         """
 
         # strings_unitarias é um vetor das seções presentes na input string
@@ -190,7 +209,11 @@ class FileSystemManager:
 #*******************************************************************************************************# 
     def disparar_comando(self, stringComando):
         """
-        Dispara o comando recebido com argumentos
+        Identifica e executa o método correspondente ao comando solicitado usando reflection.
+        Ex: "deletar" -> busca por self.comando_deletar
+        
+        :param stringComando: list: [comando, arg1, arg2, ...]
+        :return: list: Retorno do método executado ou mensagem de erro.
         """
         
         comando = stringComando[0]
@@ -222,6 +245,12 @@ class FileSystemManager:
 #*******************************************************************************************************#   
     # deletar nome_arqv
     def comando_deletar(self, *args):
+        """
+        Remove um arquivo do sistema (Root Dir e FAT).
+        
+        :param args: tuple: (nome_arquivo_com_extensao,)
+        :return: list: Mensagem de sucesso ou erro.
+        """
         
         if not args:
             return ["[sys] - Erro: Informe o arquivo a ser deletado."]
@@ -251,6 +280,11 @@ class FileSystemManager:
         return [f"arquivo {arquivo_str} excluido"]
 #*******************************************************************************************************#
     def comando_bootrecord(self):
+        """
+        Coleta as informações atuais do Boot Record (parâmetros de formatação).
+        
+        :return: list: Lista de strings formatadas com as informações.
+        """
 
         bytes_por_setor = self.get_bytes_por_setor()
         setores_por_tabela = self.get_setores_por_tabela()
@@ -269,27 +303,15 @@ class FileSystemManager:
     # args[1] = destino
 
     def comando_copiar(self, *args): # copia os elementos
-
         """
-        1 - Identificar o tipo de cópia 
-            - 1.1 Cópia interna (para dentro) : comparar args[0] e <insira string de path para o endereço da partição>
-            - 1.2 Cópia externa (de/para o .bin) : else da comparação acima
-
-        1.1 - Cópia Interna
-            - Verificar se o arquivo de origem existe : comando_listar + root_dir_manager.ler_entrada()
-            - Verificar se há espaço disponível na partição : fat_manager.verificar_espaco_disponivel(tamanho_arquivo)
-            - Se espaço, alocar FAT : fat_manager.alocar_entradas_FAT(tamanho_arquivo)
-                - Alocar entrada no root directory : 
-                - Copiar dados para os clusters alocados : pega o retorno da alocação FAT que contém a posição relativa das entradas alocadas e escreve os dados via data_manager.escrever_dados()
+        Gerencia operações de cópia (Importação e Exportação).
         
-        1.2 - Cópia Externa
-            - Verificar se o arquivo de origem existe nesse sistema
-                Alternativa 1 - Verificar se há espaço disponível na partição
-                Alternativa 2 - Tentar copiar direto e verificar o retorno para saber se foi ou deu erro
-
-        2 - Verificar se é um diretório ou arquivo único 
-            2.1 - Se diretório, acionar FLAG
+        Uso:
+            1. Importar (PC -> Sistema): copiar <caminho_arquivo_pc>
+            2. Exportar (Sistema -> PC): copiar <arquivo_interno> <caminho_destino_pc>
             
+        :param args: tuple: Argumentos passados pela CLI.
+        :return: list: Mensagem de feedback ou erro.
         """
     # args[0] = origem
     # args[1] = destino
@@ -328,11 +350,10 @@ class FileSystemManager:
 
     def funcao_copiar_interna(self, caminho_origem):
         """
-        Copia um arquivo ou diretorio de fora do sistema de arquivos(SO) para dentro
-
-        Parâmetros:
-            caminho_origem: path absoluto do arquivo dentro do SO
-
+        Realiza a importação: Copia um arquivo do SO (host) para o disco virtual.
+        
+        :param caminho_origem: str: Path absoluto do arquivo no computador host.
+        :return: list ou None: Retorna lista com mensagem de erro em caso de falha, ou None em sucesso.
         """
 
         # Pega nome e extensão do arquivo#
@@ -402,14 +423,11 @@ class FileSystemManager:
     
     def funcao_copiar_externa(self, caminho_origem, caminho_destino):
         """
-        Copia um arquivo ou diretorio de dentro do sistema de arquivos para fora
+        Realiza a exportação: Copia um arquivo do disco virtual para o SO (host).
 
-        Parâmetros:
-            caminho_origem: path absoluto do arquivo dentro do sitema de arquivos
-            caminho_destino: path absoluto do arquivo fora do sistema de arquivos
-
-        Retorna: 
-
+        :param caminho_origem: str: Nome do arquivo dentro do disco virtual.
+        :param caminho_destino: str: Path de destino no computador host.
+        :return: list ou None: Retorna lista com mensagem de erro em caso de falha, ou None em sucesso.
         """
         
         # 1. Pegar o nome do arquivo (Funciona em Windows e Linux)
@@ -448,6 +466,12 @@ class FileSystemManager:
     
 #*******************************************************************************************************#
     def comando_listar(self): # lista os elementos do diretório
+        """
+        Lista os arquivos e diretórios presentes no diretório raiz.
+        
+        :return: list: Lista de strings com os nomes dos arquivos (ex: ["a.txt", "b.png"]).
+        """
+        
         entradas = self.root_dir_manager.listar_entradas()
 
         if not entradas:
@@ -462,17 +486,15 @@ class FileSystemManager:
 #*******************************************************************************************************#    
     def comando_formatar(self, *args):
         """
-        comando_formatar operacionaliza a formatação da partição
-
-        args:
-            endereco_particao: path absoluto para o endereço da partição
-            bytes_por_setor: quantidade de bytes por setor desejada
-            setores_por_cluster: setores por cluster desejados
-            num_entradas_raiz: numero de entradas no root dir desejado
-
-        Retornos:
-            Lista com uma mensagem de sucesso caso sucesso na formatação
-            Lista com uma mensagem de erro caso falha
+        Formata a partição com o sistema de arquivos FAT48, definindo a geometria do disco.
+        
+        :param args: tuple contendo:
+            0: endereco_particao (str)
+            1: bytes_por_setor (int)
+            2: setores_por_cluster (int)
+            3: num_entradas_raiz (int)
+            
+        :return: list: Mensagem de sucesso ou erro.
         """
         # 1. Inicialização de variáveis via argumentos
         endereco_particao = args[0].strip('\'"')
