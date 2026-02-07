@@ -307,10 +307,8 @@ class FileSystemManager:
         # copia EXTERNA: de DENTRO para FORA
 
         if len(args) == 2:
-            if self.get_endereco_particao() in args[0]:
-
-                retorno = self.funcao_copiar_externa(caminho_origem, caminho_destino)
-                return retorno
+            retorno = self.funcao_copiar_externa(caminho_origem, caminho_destino)
+            return retorno
 
             # copia INTERNA: de FORA para DENTRO
         else:
@@ -526,8 +524,6 @@ class FileSystemManager:
             print(f"  fat2 : {self.get_offset("fat2")}")
             print(f"  root_dir : {self.get_offset("root_dir")}")
             print(f"  area_dados : {self.get_offset("area_dados")}")
-            
-            
             
             # 5. Execução da formatação
             formatador = Formatador()
