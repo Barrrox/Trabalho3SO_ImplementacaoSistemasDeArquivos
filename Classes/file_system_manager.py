@@ -287,34 +287,38 @@ class FileSystemManager:
         """
     # args[0] = origem
     # args[1] = destino
+
+        if not args:
+            return ["[sys] - Erro: Faltam argumentos."]
+        
+        if len(args) > 2:
+            return ["[sys] - Número incorreto de argumentos."]
+
         caminho_origem = args[0]
 
+        # === CENÁRIO 1: EXPORTAR (Virtual -> PC) ===
+        # Se tem 2 argumentos, é cópia externa (Saída)
         if len(args) == 2:
             caminho_destino = args[1]
-            if not os.path.exists(caminho_destino):
-                error = ["[sys] - Arquivo de destino não encontrado"]
-                return error
-
-        # Verifica se caminhos existem
-        if not os.path.exists(caminho_origem):
-            error = ["[sys] - Arquivo de origem não encontrado"]
-            return error
-        
-
-
-    # 1. TUDO ABAIXO É PARA ARQUIVOS, NÃO SUPORTA DIRETÓRIOS
-
-        # copia EXTERNA: de DENTRO para FORA
-
-        if len(args) == 2:
             retorno = self.funcao_copiar_externa(caminho_origem, caminho_destino)
+            
+            if retorno is None:
+                return [f"[sys] - Arquivo '{caminho_origem}' exportado para '{caminho_destino}'."]
             return retorno
 
-            # copia INTERNA: de FORA para DENTRO
-        else:
-            self.funcao_copiar_interna(caminho_origem)
+        # === CENÁRIO 2: IMPORTAR (PC -> Virtual) ===
+        # Se tem 1 argumento, é cópia interna (Entrada)
+        elif len(args) == 1:
 
-        return
+            # Verifica se existe
+            if not os.path.exists(caminho_origem):
+                return ["[sys] - Arquivo de origem não encontrado"]
+            
+            retorno = self.funcao_copiar_interna(caminho_origem)
+            
+            if retorno is None:
+                 return [f"[sys] - Arquivo '{caminho_origem}' importado com sucesso."]
+            return retorno
 
     def funcao_copiar_interna(self, caminho_origem):
         """
