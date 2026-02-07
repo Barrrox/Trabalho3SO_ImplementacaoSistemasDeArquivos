@@ -67,7 +67,11 @@ class data_manager:
             for setor in self.split_cluster_in_sectors(dados_a_escrever):
                 
                 # escreve no setor
-                self.disk_manager.escrever_setor(posicao_escrita, setor) # manda a requisição de escrita para o disk manager
+                resultado_escrita = self.disk_manager.escrever_setor(posicao_escrita, setor)
+                
+                if resultado_escrita is False:
+                    return f"[sys] Falha física ao escrever no setor {posicao_escrita}"
+                
                 bytes_escritos += len(setor) # variável de controle de bytes escritos
             
                 # ajusta o offset de escrita para a posição do próximo setor
