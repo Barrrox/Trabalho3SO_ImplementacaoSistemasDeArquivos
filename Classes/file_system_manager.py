@@ -386,15 +386,8 @@ class FileSystemManager:
 
                     with open(caminho_origem, 'rb') as f:
                         dados_arquivo = f.read()
-
-                    lista_clusters = []
-
-                    # # Pega a posição absoluta dos clusters
-                    # for i in range(len(entradas)):
-                    #     posicao = self.get_offset("area_dados") + entradas[i] * self.get_tamanho_cluster()
-                    #     lista_clusters.append(posicao)
                     
-                    clusters = self.data_manager.alocar_cluster(lista_clusters, dados_arquivo)
+                    clusters = self.data_manager.alocar_cluster(entradas, dados_arquivo)
                     if clusters:
                         print(f"clusters alocados: {clusters}")
 
