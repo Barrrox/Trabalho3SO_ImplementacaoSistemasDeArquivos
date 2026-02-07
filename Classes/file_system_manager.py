@@ -10,23 +10,23 @@ from Formatador.formatador import Formatador
 class FileSystemManager:
     """
     Classe orquestradora do Sistema de Arquivos.
-    Gerencia a comunicação entre a Interface (CLI) e os gerenciadores de baixo nível
-    (Disk, FAT, RootDir, Data). Mantém o estado atual da partição montada.
+    Mantém o estado da partição e gerencia a comunicação entre a CLI e os módulos de baixo nível.
     """
     
     def __init__(self):
+        
         # Valores padrão (Boot Record)
         self.__bytes_por_setor     = 512    # 2 bytes
         self.__setores_por_tabela  = 131072 # 4 bytes
         
-        # Valores variáveis
+        # valores variáveis
         self.__setores_por_cluster = 8      # 1 byte
         self.__num_entradas_raiz   = 512    # 2 bytes
         self.__endereco_particao = r"C:\Users\Usuario\Desktop\Unio\SO\TRAB3\Trabalho3SO_ImplementacaoSistemasDeArquivos\disco_virtual.bin"
         self.__tamanho_total_particao = 0
         self.__usuario = 1
 
-        # Inicializa os managers que não tem dependências primeiro
+        # Inicializa os managers que não tem dependências circulares primeiro
         self.root_dir_manager = root_dir_manager(self)
         self.disk_manager = disk_manager(self)
         
@@ -37,60 +37,69 @@ class FileSystemManager:
 #*******************************************************************************************************#
     def get_bytes_por_setor(self):
         """
-        :return: int: O número de bytes por setor configurado.
+        :return: int: Número de bytes por setor.
         """
         return self.__bytes_por_setor
+
 #*******************************************************************************************************#
     def get_setores_por_tabela(self):
         """
-        :return: int: O número de setores ocupados por uma tabela FAT.
+        :return: int: Número de setores por tabela FAT.
         """
         return self.__setores_por_tabela
+
 #*******************************************************************************************************#
     def get_setores_por_cluster(self):
         """
-        :return: int: A quantidade de setores que compõem um cluster.
+        :return: int: Número de setores por cluster.
         """
         return self.__setores_por_cluster 
+
 #*******************************************************************************************************#
     def get_num_entradas_raiz(self):
         """
-        :return: int: O número máximo de entradas permitidas no diretório raiz.
+        :return: int: Número máximo de entradas no diretório raiz.
         """
         return self.__num_entradas_raiz
+
 #*******************************************************************************************************# 
     def get_endereco_particao(self):
         """
-        :return: str: O caminho absoluto do arquivo .bin (disco virtual).
+        :return: str: Caminho absoluto do arquivo da partição.
         """
         return self.__endereco_particao
+
 #*******************************************************************************************************#    
     def get_tamanho_total_particao(self):
         """
-        :return: int: O tamanho total da partição em bytes.
+        :return: int: Tamanho total da partição em bytes.
         """
         return self.__tamanho_total_particao
+
 #*******************************************************************************************************# 
     def get_total_clusters(self):
         """
-        Calcula o total de clusters disponíveis na partição.
-        
-        :return: int: Número total de clusters.
+        Retorna o total de clusters na partição.
+        :return: int
         """
         tamanho_particao = self.get_tamanho_total_particao()
         bytes_por_setor = self.get_bytes_por_setor()
         setores_por_cluster = self.get_setores_por_cluster()
 
+        if bytes_por_setor == 0 or setores_por_cluster == 0:
+            return 0
+
         total_clusters = (tamanho_particao / bytes_por_setor) / setores_por_cluster
 
         return int(total_clusters)
+
 #*******************************************************************************************************# 
     def get_offset(self, secao):
         """
-        Retorna o deslocamento (offset) em bytes onde inicia uma seção específica do disco.
+        Retorna o offset em bytes de uma seção específica.
         
-        :param secao: pode ser qualquer string dentro dessa lista: ("boot_record", "fat1", "fat2", "root_dir", "area_dados")
-        :return: int: Offset em bytes ou None se a seção for inválida.
+        :param secao: str ("boot_record", "fat1", "fat2", "root_dir", "area_dados")
+        :return: int: Offset em bytes ou None se inválido.
         """
         bytes_setor = self.get_bytes_por_setor()
         setores_por_tabela = self.get_setores_por_tabela()
@@ -115,90 +124,91 @@ class FileSystemManager:
         
         else:
             return None
+
 #*******************************************************************************************************#
     def get_tamanho_cluster(self):
         """
-        Calcula o tamanho de um cluster baseado na configuração atual.
-        Fórmula: bytes_por_setor * setores_por_cluster
-        
-        :return: int: Tamanho do cluster em bytes.
+        :return: int: Tamanho de 1 cluster em bytes.
         """
-
         tamanho_setor = self.get_bytes_por_setor()
         setores_por_cluster = self.get_setores_por_cluster()
 
-        tamanho_cluster = tamanho_setor*setores_por_cluster
+        tamanho_cluster = tamanho_setor * setores_por_cluster
         
         return tamanho_cluster
+
 #*******************************************************************************************************#
     def get_usuario(self):
-        """Retorna o usuario atual do sistema"""
+        """
+        :return: Usuário atual do sistema.
+        """
         return self.__usuario
+
 #*******************************************************************************************************#
     def get_nivel_permissao(self):
-
+        """
+        :return: int: 1 se admin, 0 caso contrário.
+        """
         usuario = self.get_usuario()
 
         if usuario == "admin" or usuario == "administrador":
             return 1
         else:
             return 0
+
 #*******************************************************************************************************#
     def set_usuario(self, usuario):
         self.__usuario = usuario
+
 #*******************************************************************************************************
     def set_setores_por_tabela(self, setores_por_tabela):
         self.__setores_por_tabela = setores_por_tabela
-        return
+
 #*******************************************************************************************************#
     def set_num_entradas_raiz(self, num_entradas_raiz):
         self.__num_entradas_raiz = num_entradas_raiz
-        return
+
 #*******************************************************************************************************#  
     def set_setores_por_cluster(self, setores_por_cluster):
         self.__setores_por_cluster = setores_por_cluster
-        return
+
 #*******************************************************************************************************#
     def set_tamanho_total_particao(self, tamanho):
         """
-        Define o tamanho total da partição.
-        
-        :param tamanho: int ou float (será tratado como bytes). Deve ser >= 0.
+        Define o tamanho total da partição em bytes.
+        :param tamanho: int ou float (>= 0).
         """
         if isinstance(tamanho, (int, float)) and tamanho >= 0:
             self.__tamanho_total_particao = tamanho
-        return    
+ 
 #*******************************************************************************************************#    
     def set_bytes_por_setor(self, bytes_por_setor):
-        """
-        Define a quantidade de bytes por setor.
-        :param bytes_por_setor: int
-        """
         self.__bytes_por_setor = bytes_por_setor
 
-        return    
 #*******************************************************************************************************#
     def set_endereco_particao(self, endereco):
         """
-        Define o endereço do arquivo de disco.
-        
-        :param endereco: str: Caminho do arquivo.
-        :return: bool: True se o endereço for uma string válida, False caso contrário.
+        Define o endereço da partição.
+        :param endereco: str
+        :return: bool: True se válido.
         """
         if isinstance(endereco, str):
             self.__endereco_particao = endereco
             return True
         return False
+
 #*******************************************************************************************************#   
     def ler_input_interface(self, input_string):
         """
-        Processa a entrada bruta do usuário e encaminha para o disparador.
+        Processa o input da interface.
         
-        :param input_string: str: O comando completo digitado (ex: "copiar a.txt b.txt")
-        :return: list: Lista contendo strings de feedback ou mensagens de erro.
+        1. verifica se é comando válido
+        2. envia para disparar_comando
+        
+        :param input_string: Comando completo digitado.
+        :return: list: Resultado da operação ou erro.
         """
 
-        # strings_unitarias é um vetor das seções presentes na input string
         strings_unitarias = input_string.split()
 
         if not strings_unitarias:
@@ -206,22 +216,18 @@ class FileSystemManager:
             return erro
         else:
             return self.disparar_comando(strings_unitarias)    
+
 #*******************************************************************************************************# 
     def disparar_comando(self, stringComando):
         """
-        Identifica e executa o método correspondente ao comando solicitado usando reflection.
-        Ex: "deletar" -> busca por self.comando_deletar
+        Executa dinamicamente o método correspondente ao comando (Reflection).
+        Ex: "deletar" -> comando_deletar
         
-        :param stringComando: list: [comando, arg1, arg2, ...]
-        :return: list: Retorno do método executado ou mensagem de erro.
+        :param stringComando: Lista [comando, arg1, arg2...]
         """
         
         comando = stringComando[0]
         argumentos = stringComando[1:]
-
-        # Essa seção verifica se o comando existe como método dentro da classe, tais estão nomeados como "comando_<nome_do_comando>"
-        # def comando_<oq o cara digitou no terminal>(self, <*args se forem usar argumentos>):
-        # acessar individualmente cada casa da tupla para ter acesso ao argumento
         
         comando_requerido = f"comando_{comando}"
         if hasattr(self, comando_requerido):
@@ -230,26 +236,26 @@ class FileSystemManager:
         else:
             erro = ["Comando inválido ou não existente!"]
             return erro
+
 #*******************************************************************************************************#
     def comando_exemplo(self, *args):
+        """Comando de teste (echo)."""
         resultado = [f"Comando de exemplo! você escreveu 'exemplo' seguido de {args}."]
         return resultado
-#*******************************************************************************************************#
-    # Exemplo de comando usando retorno com dicionarios
-    def comando_exemplo2(self, *args):
 
-        if args[0] == "1":
+#*******************************************************************************************************#
+    def comando_exemplo2(self, *args):
+        """Comando de teste (retorno dict)."""
+        if args and args[0] == "1":
             return {"rodou?": True, "comando" : "exemplo2", "dados" : 1, "msg_erro": None}
         else:
             return {"rodou?": False, "comando" : "exemplo2", "dados" : None, "msg_erro": "Não digitou 1"}
+
 #*******************************************************************************************************#   
-    # deletar nome_arqv
     def comando_deletar(self, *args):
         """
-        Remove um arquivo do sistema (Root Dir e FAT).
-        
-        :param args: tuple: (nome_arquivo_com_extensao,)
-        :return: list: Mensagem de sucesso ou erro.
+        Deleta um arquivo do sistema.
+        :param args: (nome_arquivo,)
         """
         
         if not args:
@@ -261,11 +267,11 @@ class FileSystemManager:
         if "." not in arquivo_str:
             return ["[sys] - Informe o nome e a extensão (ex: arquivo.txt)"]
 
-        # 1. Separa Nome e Extensão (Correção do erro atual)
+        # 1. Separa Nome e Extensão
         nome_arquivo = arquivo_str.split(".")[0]
         extensao_arquivo = arquivo_str.split(".")[1]
         
-        entrada = self.root_dir_manager.ler_entrada(nome_arquivo, extensao_arquivo) # procura entrada do arquivo
+        entrada = self.root_dir_manager.ler_entrada(nome_arquivo, extensao_arquivo)
 
         if not entrada:
             return ["[sys] - Arquivo não encontrado"]
@@ -278,14 +284,13 @@ class FileSystemManager:
         self.fat_manager.sincronizar_fat_1_2()
 
         return [f"arquivo {arquivo_str} excluido"]
+
 #*******************************************************************************************************#
     def comando_bootrecord(self):
         """
-        Coleta as informações atuais do Boot Record (parâmetros de formatação).
-        
-        :return: list: Lista de strings formatadas com as informações.
+        Exibe informações do Boot Record atual.
+        :return: list: Info formatada.
         """
-
         bytes_por_setor = self.get_bytes_por_setor()
         setores_por_tabela = self.get_setores_por_tabela()
         setores_por_cluster = self.get_setores_por_cluster()
@@ -298,23 +303,18 @@ class FileSystemManager:
                       f"Número de entradas no diretório raiz: {num_entradas_raiz}"
                       ]
         return bootrecord
-#*******************************************************************************************************#
-    # args[0] = origem
-    # args[1] = destino
 
-    def comando_copiar(self, *args): # copia os elementos
+#*******************************************************************************************************#
+    def comando_copiar(self, *args):
         """
-        Gerencia operações de cópia (Importação e Exportação).
+        Gerencia cópia de arquivos.
         
         Uso:
-            1. Importar (PC -> Sistema): copiar <caminho_arquivo_pc>
-            2. Exportar (Sistema -> PC): copiar <arquivo_interno> <caminho_destino_pc>
+            1. Importar (PC -> Sistema): copiar <origem>
+            2. Exportar (Sistema -> PC): copiar <origem> <destino>
             
-        :param args: tuple: Argumentos passados pela CLI.
-        :return: list: Mensagem de feedback ou erro.
+        :param args: Argumentos da linha de comando.
         """
-    # args[0] = origem
-    # args[1] = destino
 
         if not args:
             return ["[sys] - Erro: Faltam argumentos."]
@@ -325,7 +325,6 @@ class FileSystemManager:
         caminho_origem = args[0]
 
         # === CENÁRIO 1: EXPORTAR (Virtual -> PC) ===
-        # Se tem 2 argumentos, é cópia externa (Saída)
         if len(args) == 2:
             caminho_destino = args[1]
             retorno = self.funcao_copiar_externa(caminho_origem, caminho_destino)
@@ -335,10 +334,8 @@ class FileSystemManager:
             return retorno
 
         # === CENÁRIO 2: IMPORTAR (PC -> Virtual) ===
-        # Se tem 1 argumento, é cópia interna (Entrada)
         elif len(args) == 1:
-
-            # Verifica se existe
+            # Verifica se existe no PC
             if not os.path.exists(caminho_origem):
                 return ["[sys] - Arquivo de origem não encontrado"]
             
@@ -350,14 +347,15 @@ class FileSystemManager:
 
     def funcao_copiar_interna(self, caminho_origem):
         """
-        Realiza a importação: Copia um arquivo do SO (host) para o disco virtual.
-        
-        :param caminho_origem: str: Path absoluto do arquivo no computador host.
-        :return: list ou None: Retorna lista com mensagem de erro em caso de falha, ou None em sucesso.
+        Importa um arquivo do SO para o disco virtual.
+        :param caminho_origem: Path absoluto no SO.
         """
 
-        # Pega nome e extensão do arquivo#
-        arquivo_str = caminho_origem.split("/")[-1].lower()
+        # Pega nome e extensão do arquivo
+        arquivo_str = os.path.basename(caminho_origem).lower()
+        if "." not in arquivo_str:
+             return ["[sys] - Arquivos sem extensão não são suportados na importação."]
+
         nome_arquivo     = arquivo_str.split(".")[0].lower()
         extensao_arquivo = arquivo_str.split(".")[1].lower()
         
@@ -366,29 +364,27 @@ class FileSystemManager:
 
         if entrada != None:
             erro = ['[sys] - Arquivo já existe no sistema. Operação abortada']
-           # print("Arquivo já existe")
             return erro
 
         if isinstance(entrada, str):
-            erro = entrada # retorna a string de erro providenciada pela função ler_entrada
+            erro = entrada
             return erro
         
         tamanho_arquivo = os.path.getsize(caminho_origem)
 
         #************************************************************# começo da alocação
 
-        if self.fat_manager.verificar_espaco_disponivel(tamanho_arquivo): # testa se tem espaço disponível para o arquivo
+        if self.fat_manager.verificar_espaco_disponivel(tamanho_arquivo): 
             tamanho_cluster = self.get_tamanho_cluster()
-
             quantidade_de_clusters = math.ceil(tamanho_arquivo/tamanho_cluster)       
 
             entradas, __Error = self.fat_manager.buscar_entradas_livres(quantidade_de_clusters)
             
-            if len(entradas) == quantidade_de_clusters: #  se tem entradas o bastante disponíveis
+            if len(entradas) == quantidade_de_clusters: 
                 
-                entrada_root_dir = self.root_dir_manager.procurar_entrada_livre() # testa se existe uma entrada disponível
+                entrada_root_dir = self.root_dir_manager.procurar_entrada_livre()
                 
-                if entrada_root_dir != None: # se tiver 
+                if entrada_root_dir != None: 
                   
                     entradas = self.fat_manager.alocar_entradas_FAT(tamanho_arquivo)
                     escrita = self.root_dir_manager.escrever_entrada_arquivo(
@@ -402,19 +398,15 @@ class FileSystemManager:
                     
                     
                     if not escrita:
-                        print(f"escreveu errado")
                         #  escreveu errado, falta tratar
                         pass
-                    # como tem espaço no disco e entrada no root, lemos o arquivo:
-
+                    
+                    # Leitura e gravação dos dados
                     with open(caminho_origem, 'rb') as f:
                         dados_arquivo = f.read()
                     
                     self.data_manager.alocar_cluster(entradas, dados_arquivo)
                     
-
-                # verificar se tem espaço disponível no root dir
-            
         else:
             error = ["[sys] - Não há espaço disponível no sistema. Operação abortada"]
             return error
@@ -423,15 +415,13 @@ class FileSystemManager:
     
     def funcao_copiar_externa(self, caminho_origem, caminho_destino):
         """
-        Realiza a exportação: Copia um arquivo do disco virtual para o SO (host).
-
-        :param caminho_origem: str: Nome do arquivo dentro do disco virtual.
-        :param caminho_destino: str: Path de destino no computador host.
-        :return: list ou None: Retorna lista com mensagem de erro em caso de falha, ou None em sucesso.
+        Exporta um arquivo do disco virtual para o SO.
+        
+        :param caminho_origem: Nome interno (ex: a.txt).
+        :param caminho_destino: Path destino no SO.
         """
         
-        # 1. Pegar o nome do arquivo (Funciona em Windows e Linux)
-        # os.path.basename pega apenas "arquivo.txt" ignorando C:\ ou /home/
+        # 1. Pegar o nome do arquivo
         arquivo_str = os.path.basename(caminho_origem).lower()
 
         if "." not in arquivo_str:
@@ -454,7 +444,7 @@ class FileSystemManager:
         # 1.3 ler arquivo via data manager
         dados_arquivo = self.data_manager.ler_clusters(clusters_arquivo)
 
-        # Se o data_manager retornar uma string (mensagem de erro), não podemos gravar
+        # Se o data_manager retornar uma string, é erro
         if isinstance(dados_arquivo, str) and "[sys]" in dados_arquivo:
              return [dados_arquivo]
         
@@ -465,13 +455,11 @@ class FileSystemManager:
         return 
     
 #*******************************************************************************************************#
-    def comando_listar(self): # lista os elementos do diretório
+    def comando_listar(self):
         """
-        Lista os arquivos e diretórios presentes no diretório raiz.
-        
-        :return: list: Lista de strings com os nomes dos arquivos (ex: ["a.txt", "b.png"]).
+        Lista entradas do diretório raiz.
+        :return: Lista de nomes formatados.
         """
-        
         entradas = self.root_dir_manager.listar_entradas()
 
         if not entradas:
@@ -483,25 +471,16 @@ class FileSystemManager:
             resultado.append(f"{entrada[0]}.{entrada[1]}")
         
         return resultado
+
 #*******************************************************************************************************#    
     def comando_formatar(self, *args):
         """
-        Formata a partição com o sistema de arquivos FAT48, definindo a geometria do disco.
-        
-        :param args: tuple contendo:
-            0: endereco_particao (str)
-            1: bytes_por_setor (int)
-            2: setores_por_cluster (int)
-            3: num_entradas_raiz (int)
-            
-        :return: list: Mensagem de sucesso ou erro.
+        Formata a partição e atualiza os parâmetros do sistema.
+        args: (endereco, bytes_setor, setores_cluster, num_entradas)
         """
         # 1. Inicialização de variáveis via argumentos
         endereco_particao = args[0].strip('\'"')
-        
         endereco_particao = os.path.normpath(endereco_particao)
-
-        #endereco_particao = args[0]
 
         bytes_por_setor     = int(args[1])
         setores_por_cluster = int(args[2])
@@ -517,11 +496,7 @@ class FileSystemManager:
             tamanho_particao = os.path.getsize(endereco_particao)
 
             # 4. Calculando setores por tabela
-            # Setores por tabela = RoundUp(TotalClusters * TamEntradaFAT / BytesPorSetor)
-
             total_clusters = tamanho_particao / bytes_por_setor / setores_por_cluster
-
-            
 
             bytes_por_entrada = 32 / 8 # 32 bits de entrada FAT -> 4 bytes
 
@@ -536,7 +511,6 @@ class FileSystemManager:
             self.set_num_entradas_raiz(int(num_entradas_raiz))
             self.set_endereco_particao(endereco_particao)
             self.set_tamanho_total_particao(int(tamanho_particao))
-
             
             # 5. Execução da formatação
             formatador = Formatador()
@@ -551,8 +525,6 @@ class FileSystemManager:
             
             self.set_endereco_particao(endereco_particao)
             return [f"[sys] - Partição em {endereco_particao} formatada com sucesso."]
-        
-        
 
         except Exception as e:
             return [f"[sys] - Erro inesperado: {str(e)}"]
