@@ -439,8 +439,12 @@ class FileSystemManager:
         primeiro_cluster = entrada_arquivo[6]
         clusters_arquivo = self.fat_manager.pegar_clusters_arquivo(primeiro_cluster)
 
+        tamanho_real = entrada_arquivo[3]  # tamanho salvo no root dir
+
         # 1.3 ler arquivo via data manager
         dados_arquivo = self.data_manager.ler_clusters(clusters_arquivo)
+
+        dados_arquivo = dados_arquivo[:tamanho_real]
 
         # Se o data_manager retornar uma string, é erro
         if isinstance(dados_arquivo, str) and "[sys]" in dados_arquivo:
