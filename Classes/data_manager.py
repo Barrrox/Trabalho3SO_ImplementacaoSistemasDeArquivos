@@ -37,6 +37,7 @@ class data_manager:
         """
 
         tamanho_cluster = self.file_sys_manager.get_tamanho_cluster()
+        tamanho_setor = self.file_sys_manager.get_bytes_por_setor()
         numero_de_escritas = len(lista_clusters)
         offset_dados = self.file_sys_manager.get_offset("area_dados")
         bytes_escritos = 0 # variável de controle de bytes escritos
@@ -76,7 +77,7 @@ class data_manager:
             
                 # ajusta o offset de escrita para a posição do próximo setor
                 escritas_setor += 1
-                posicao_escrita = posicao + (escritas_setor * self.disk_manager.tamanho_setor)
+                posicao_escrita = posicao + (escritas_setor * tamanho_setor)
             
             if callback:
                 percentual = ((i + 1) / numero_de_escritas) * 100

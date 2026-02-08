@@ -13,12 +13,6 @@ class disk_manager:
         :param file_sys_manager: Instância do FileSystemManager para acesso a configurações.
         """
         self.file_sys_manager = file_sys_manager
-
-        self.tamanho_setor = self.file_sys_manager.get_bytes_por_setor()
-        self.tamanho_cluster = self.file_sys_manager.get_tamanho_cluster()
-        self.setores_por_cluster = self.file_sys_manager.get_setores_por_cluster()
-
-        self.cluster_em_bytes = self.setores_por_cluster * self.tamanho_setor
  
     def ler_setor(self, posicao):
         """
@@ -32,7 +26,7 @@ class disk_manager:
 
         with open(endereco_particao, 'r+b') as f:
             f.seek(posicao)
-            lido = f.read(self.tamanho_setor)
+            lido = f.read(self.file_sys_manager.get_bytes_por_setor())
         
         return lido
 
@@ -53,7 +47,7 @@ class disk_manager:
             
             # Validação: verifica se a posição atual do ponteiro após a escrita 
             # corresponde à posição inicial somada ao tamanho do setor esperado.
-            if f.tell() == int(posicao) + self.tamanho_setor:
+            if f.tell() == int(posicao) + self.file_sys_manager.get_bytes_por_setor():
                 return dados_escritos
             else:
                 return False
