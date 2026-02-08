@@ -13,8 +13,6 @@ class FAT_table_manager:
         self.data_manager = file_sys_manager.data_manager
         self.root_manager = file_sys_manager.root_dir_manager
         self.tamanho_entrada = 4 # Cada entrada na FAT ocupa 4 bytes
-        self.offset_fat = self.file_sys_manager.get_offset("fat1")
-        self.offset_fat2 = self.file_sys_manager.get_offset("fat2")
         self.FAT_EOF = 0xFFFFFFFF
 
 
@@ -53,7 +51,7 @@ class FAT_table_manager:
         with open(endereco_particao, 'rb') as f:
             
             # Começa da entrada 1, ignorando a entrada reservada 0
-            f.seek(self.offset_fat + 4)
+            f.seek(self.file_sys_manager.get_offset("fat1") + 4)
 
             total_clusters = self.file_sys_manager.get_total_clusters()
 
@@ -115,7 +113,7 @@ class FAT_table_manager:
             for i in range(len(entradas)): # posiciona o cursor na posição absoluta da entrada FAT
 
                 # Calcula a posição física somando o início da FAT com o índice do cluster * 4 bytes
-                posicao = self.offset_fat + (entradas[i] * 4)  
+                posicao = self.file_sys_manager.get_offset("fat1") + (entradas[i] * 4)  
                 f.seek(posicao)
 
                 if i == len(entradas)-1: # se for o final da chain marca como EOF
@@ -147,7 +145,7 @@ class FAT_table_manager:
         cluster_atual = primeiro_cluster
         with open(endereco_particao, 'r+b') as file:
             while True:
-                posicao = self.offset_fat + (cluster_atual * 4) # Entrada de 4bytes
+                posicao = self.file_sys_manager.get_offset("fat1") + (cluster_atual * 4) # Entrada de 4bytes
                 file.seek(posicao) # posiciona o cursor na entrada
 
                 proximo_cluster = int.from_bytes(file.read(4), 'little') # lê os bytes da posição para saber qual o próximo
@@ -188,7 +186,7 @@ class FAT_table_manager:
                 visitados.add(cluster_atual) # salva o caminho para verificação de loop
                 cluster_chain.append(cluster_atual) # salva o cluster atual na lista de retorno
 
-                posicao_fat = self.offset_fat + (cluster_atual * self.tamanho_entrada) # desloca o leitor ate a entrada atual
+                posicao_fat = self.file_sys_manager.get_offset("fat1") + (cluster_atual * self.tamanho_entrada) # desloca o leitor ate a entrada atual
                 f.seek(posicao_fat)
 
                 entrada_bytes = f.read(self.tamanho_entrada) # le o conteudo da entrada (ponteiro para o próximo)
@@ -215,9 +213,9 @@ class FAT_table_manager:
         size = bytesPorSetor * setoresPorTabela # calcula o tamanho da tabela fat em bytes
 
         with open(endereco_particao, 'r+b') as file:
-            file.seek(self.offset_fat)
+            file.seek(self.file_sys_manager.get_offset("fat1"))
             dados = file.read(size) # copia os dados integrais da fat 1
 
-            file.seek(self.offset_fat2) 
+            file.seek(self.file_sys_manager.get_offset("fat2")) 
             file.write(dados) # cola os dados na fat 2
         return
