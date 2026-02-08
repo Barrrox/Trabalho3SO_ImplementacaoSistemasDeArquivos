@@ -97,38 +97,29 @@ class data_manager:
     
     def ler_clusters(self, lista_clusters):
         """        
-        :param lista_clusters: lista contendo as posições relativas dos clusters a serem lidos
-        :return: lista que contém dados lidos com tamanho de 1 cluster a cada posição 
+        Lê a cadeia de clusters de forma otimizada usando b"".join().
+        
+        :param lista_clusters: lista com as posições relativas dos clusters.
+        :return: bytes contendo os dados concatenados de todos os clusters.
         """
-
         tamanho_cluster = self.file_sys_manager.get_tamanho_cluster()
         tamanho_setor = self.file_sys_manager.get_bytes_por_setor()
-        numero_de_leituras = len(lista_clusters)
-
-        dados_arquivo = b""
         offset_dados = self.file_sys_manager.get_offset("area_dados")
-
         caminho_particao = self.file_sys_manager.get_endereco_particao()
 
-        with open(caminho_particao, "r+b") as f:
-        
-            for i in range(numero_de_leituras): # lê um numero de vezes == ao numero de clusters necessários
+        # Variavel para acumular os setores numa lista
+        # Antes estava sendo feito com += em uma string, mas
+        # o python recria variavel toda vez fazendo isso, o que é lento
+        buffer_setores = []
 
-                bytes_lidos = 0 # variável de controle de bytes lidos
-                dados_lidos = b""
+        with open(caminho_particao, "rb") as f:
+            for cluster_idx in lista_clusters:
+                posicao_base = (cluster_idx * tamanho_cluster) + offset_dados 
 
-                # pega a posição relativa do cluster a ser lido (Endereço físico)
-                posicao = (lista_clusters[i] * tamanho_cluster) + offset_dados 
+                # Le setor a setor
+                for deslocamento in range(0, tamanho_cluster, tamanho_setor):
+                    setor = self.disk_manager.ler_setor(posicao_base + deslocamento, f)
+                    buffer_setores.append(setor)
 
-                for posicao_leitura in range(0, tamanho_cluster, tamanho_setor):
-                    
-                    dados_lidos += self.disk_manager.ler_setor(posicao + posicao_leitura, f)
-                    bytes_lidos += tamanho_setor
-                
-                if bytes_lidos == tamanho_cluster:
-                    dados_arquivo += dados_lidos
-                else:
-                    error = f"[sys] - bytes lidos != tamanho de 1 cluster -> {bytes_lidos} != {tamanho_cluster}"
-                    return error
-
-        return dados_arquivo
+        # join une os bytes do buffer em uma coisa só
+        return b"".join(buffer_setores)
