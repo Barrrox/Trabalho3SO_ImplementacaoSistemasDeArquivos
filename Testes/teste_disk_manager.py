@@ -36,13 +36,16 @@ class TestDiskManager(unittest.TestCase):
         dados_originais = b"D" * tamanho_setor
         posicao_teste = 0 # Início do disco (Boot Record)
 
-        # Escrita
-        bytes_escritos = self.dm.escrever_setor(posicao_teste, dados_originais)
-        self.assertEqual(bytes_escritos, tamanho_setor)
+        with open(self.caminho_particao, "r+b") as f:
 
-        # Leitura
-        dados_lidos = self.dm.ler_setor(posicao_teste)
-        self.assertEqual(dados_lidos, dados_originais)
+
+            # Escrita
+            bytes_escritos = self.dm.escrever_setor(posicao_teste, dados_originais, f)
+            self.assertEqual(bytes_escritos, tamanho_setor)
+
+            # Leitura
+            dados_lidos = self.dm.ler_setor(posicao_teste, f)
+            self.assertEqual(dados_lidos, dados_originais)
 
     def test_escrever_setor_com_padding(self):
         """Testa se a escrita completa com zeros quando os dados são menores que o setor."""
@@ -50,11 +53,13 @@ class TestDiskManager(unittest.TestCase):
         dados_curtos = b"TESTE_PADDING"
         posicao_teste = tamanho_setor * 2 # Setor 2
 
-        # Execução
-        self.dm.escrever_setor(posicao_teste, dados_curtos)
+        with open(self.caminho_particao, "r+b") as f:
 
-        # Validação Física
-        with open(self.caminho_particao, "rb") as f:
+            # Execução
+            self.dm.escrever_setor(posicao_teste, dados_curtos, f)
+
+            # Validação Física
+        
             f.seek(posicao_teste)
             conteudo_final = f.read(tamanho_setor)
             
@@ -71,12 +76,14 @@ class TestDiskManager(unittest.TestCase):
         
         posicao_teste = tamanho_setor * 10 # Setor 10
 
-        # Execução
-        self.dm.escrever_setor(posicao_teste, dados_1)
-        self.dm.escrever_setor(posicao_teste+tamanho_setor, dados_2)
+        with open(self.caminho_particao, "r+b") as f:
 
-        bytes_escritos1 = self.dm.ler_setor(posicao_teste)
-        bytes_escritos2 = self.dm.ler_setor(posicao_teste+tamanho_setor)
+            # Execução
+            self.dm.escrever_setor(posicao_teste, dados_1, f)
+            self.dm.escrever_setor(posicao_teste+tamanho_setor, dados_2, f)
+
+            bytes_escritos1 = self.dm.ler_setor(posicao_teste, f)
+            bytes_escritos2 = self.dm.ler_setor(posicao_teste+tamanho_setor, f)
 
         # Deve ter escrito 1024 bytes (2 setores)
         self.assertEqual(bytes_escritos1, dados_1)
@@ -93,8 +100,8 @@ class TestDiskManager(unittest.TestCase):
             f.seek(posicao_alvo)
             f.write(dados_especificos)
 
-        # Executa a leitura via manager
-        dados_lidos = self.dm.ler_setor(posicao_alvo)
+            # Executa a leitura via manager
+            dados_lidos = self.dm.ler_setor(posicao_alvo, f)
         self.assertEqual(dados_lidos, dados_especificos)
 
 if __name__ == '__main__':

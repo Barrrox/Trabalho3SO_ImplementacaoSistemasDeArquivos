@@ -42,51 +42,55 @@ class data_manager:
         offset_dados = self.file_sys_manager.get_offset("area_dados")
         bytes_escritos = 0 # variável de controle de bytes escritos
 
-        for i in range(numero_de_escritas): # escreve um numero de vezes == ao numero de clusters necessários
+        caminho_particao = self.file_sys_manager.get_endereco_particao()
 
-            # pega a posição relativa do cluster a ser escrito (Endereço físico)
-            posicao = (lista_clusters[i] * tamanho_cluster) + offset_dados 
+        with open(caminho_particao, "r+b") as f:
 
-            quanto_falta_escrever = len(dados) - bytes_escritos
+            for i in range(numero_de_escritas): # escreve um numero de vezes == ao numero de clusters necessários
 
-            if quanto_falta_escrever < tamanho_cluster: 
-                # caso específico: último cluster a ser escrito não está completo
-                # fix -> pegar o tamanho que falta e completar com 0's (padding)
+                # pega a posição relativa do cluster a ser escrito (Endereço físico)
+                posicao = (lista_clusters[i] * tamanho_cluster) + offset_dados 
 
-                dados_reais = dados[bytes_escritos:]
-                padding = tamanho_cluster - len(dados_reais)
-                dados_a_escrever = dados_reais + b'\x00' * padding
+                quanto_falta_escrever = len(dados) - bytes_escritos
 
+                if quanto_falta_escrever < tamanho_cluster: 
+                    # caso específico: último cluster a ser escrito não está completo
+                    # fix -> pegar o tamanho que falta e completar com 0's (padding)
+
+                    dados_reais = dados[bytes_escritos:]
+                    padding = tamanho_cluster - len(dados_reais)
+                    dados_a_escrever = dados_reais + b'\x00' * padding
+
+                else:
+                    # separa dados com tamanho de 1 cluster
+                    dados_a_escrever = dados[bytes_escritos:(bytes_escritos + tamanho_cluster)] 
+
+                # separa na quantia de setores necessários para a escrita
+                escritas_setor = 0
+                posicao_escrita = posicao
+                
+                for setor in self.split_cluster_in_sectors(dados_a_escrever):
+                    
+                    # escreve no setor
+                    resultado_escrita = self.disk_manager.escrever_setor(posicao_escrita, setor, f)
+                    
+                    if resultado_escrita is False:
+                        return f"[sys] Falha física ao escrever no setor {posicao_escrita}"
+                    
+                    bytes_escritos += len(setor) # variável de controle de bytes escritos
+                
+                    # ajusta o offset de escrita para a posição do próximo setor
+                    escritas_setor += 1
+                    posicao_escrita = posicao + (escritas_setor * tamanho_setor)
+                
+                if callback:
+                    percentual = ((i + 1) / numero_de_escritas) * 100
+                    callback(percentual) # Notifica a interface
+
+            if bytes_escritos < len(dados):
+                return f"Erro na alocação do cluster. bytes_escritos != len(dados): {bytes_escritos} != {len(dados)}"
             else:
-                # separa dados com tamanho de 1 cluster
-                dados_a_escrever = dados[bytes_escritos:(bytes_escritos + tamanho_cluster)] 
-
-            # separa na quantia de setores necessários para a escrita
-            escritas_setor = 0
-            posicao_escrita = posicao
-            
-            for setor in self.split_cluster_in_sectors(dados_a_escrever):
-                
-                # escreve no setor
-                resultado_escrita = self.disk_manager.escrever_setor(posicao_escrita, setor)
-                
-                if resultado_escrita is False:
-                    return f"[sys] Falha física ao escrever no setor {posicao_escrita}"
-                
-                bytes_escritos += len(setor) # variável de controle de bytes escritos
-            
-                # ajusta o offset de escrita para a posição do próximo setor
-                escritas_setor += 1
-                posicao_escrita = posicao + (escritas_setor * tamanho_setor)
-            
-            if callback:
-                percentual = ((i + 1) / numero_de_escritas) * 100
-                callback(percentual) # Notifica a interface
-
-        if bytes_escritos < len(dados):
-            return f"Erro na alocação do cluster. bytes_escritos != len(dados): {bytes_escritos} != {len(dados)}"
-        else:
-            return lista_clusters
+                return lista_clusters
 
     def liberar_cluster():
         return
@@ -103,24 +107,28 @@ class data_manager:
 
         dados_arquivo = b""
         offset_dados = self.file_sys_manager.get_offset("area_dados")
+
+        caminho_particao = self.file_sys_manager.get_endereco_particao()
+
+        with open(caminho_particao, "r+b") as f:
         
-        for i in range(numero_de_leituras): # lê um numero de vezes == ao numero de clusters necessários
+            for i in range(numero_de_leituras): # lê um numero de vezes == ao numero de clusters necessários
 
-            bytes_lidos = 0 # variável de controle de bytes lidos
-            dados_lidos = b""
+                bytes_lidos = 0 # variável de controle de bytes lidos
+                dados_lidos = b""
 
-            # pega a posição relativa do cluster a ser lido (Endereço físico)
-            posicao = (lista_clusters[i] * tamanho_cluster) + offset_dados 
+                # pega a posição relativa do cluster a ser lido (Endereço físico)
+                posicao = (lista_clusters[i] * tamanho_cluster) + offset_dados 
 
-            for posicao_leitura in range(0, tamanho_cluster, tamanho_setor):
+                for posicao_leitura in range(0, tamanho_cluster, tamanho_setor):
+                    
+                    dados_lidos += self.disk_manager.ler_setor(posicao + posicao_leitura, f)
+                    bytes_lidos += tamanho_setor
                 
-                dados_lidos += self.disk_manager.ler_setor(posicao + posicao_leitura)
-                bytes_lidos += tamanho_setor
-            
-            if bytes_lidos == tamanho_cluster:
-                dados_arquivo += dados_lidos
-            else:
-                error = f"[sys] - bytes lidos != tamanho de 1 cluster -> {bytes_lidos} != {tamanho_cluster}"
-                return error
+                if bytes_lidos == tamanho_cluster:
+                    dados_arquivo += dados_lidos
+                else:
+                    error = f"[sys] - bytes lidos != tamanho de 1 cluster -> {bytes_lidos} != {tamanho_cluster}"
+                    return error
 
         return dados_arquivo
