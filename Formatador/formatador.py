@@ -68,6 +68,7 @@ class Formatador:
         try:
             # No WSL/Linux, isso exige que você rode o script com sudo
             subprocess.run(comando, check=True)
+            print("\nFinalizando a formatação. Aguarde...")
             os.sync() # Força a gravação física
         except subprocess.CalledProcessError as e:
             print(f"Erro ao executar dd: {e}")

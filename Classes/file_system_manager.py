@@ -495,7 +495,11 @@ class FileSystemManager:
         
         try:
             # 3. Descobrir tamanho da partição em bytes
-            tamanho_particao = os.path.getsize(endereco_particao)
+            if endereco_particao.startswith("/dev/"):
+                with open(endereco_particao, 'rb') as f:
+                    tamanho_particao = f.seek(0, 2) # Vai ao final do dispositivo e retorna a posição
+            else:
+                tamanho_particao = os.path.getsize(endereco_particao)
 
             # 4. Calculando setores por tabela
             total_clusters = tamanho_particao / bytes_por_setor / setores_por_cluster
