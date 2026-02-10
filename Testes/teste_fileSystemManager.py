@@ -128,7 +128,7 @@ class TesteSystemFileManager(unittest.TestCase):
         # Verifica se os métodos de "limpeza" foram chamados com os dados certos:
         
         self.file_system_manager.fat_manager.desalocar_arquivo.assert_called_once_with(10)
-        self.file_system_manager.root_dir_manager.desalocar_entrada_arquivo.assert_called_once_with("teste")
+        self.file_system_manager.root_dir_manager.desalocar_entrada_arquivo.assert_called_once_with("teste", "txt")
         self.file_system_manager.fat_manager.sincronizar_fat_1_2.assert_called_once()
 
     def test_comando_deletar_arquivo_nao_encontrado(self):

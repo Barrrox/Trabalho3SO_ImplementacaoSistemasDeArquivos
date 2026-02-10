@@ -70,7 +70,7 @@ class TestRootDirManager(unittest.TestCase):
         self.manager.escrever_entrada_arquivo(0x02, "deletar", "tmp", 100, 2, 1, 1)
         
         # 2. Deleta
-        sucesso = self.manager.desalocar_entrada_arquivo("deletar")
+        sucesso = self.manager.desalocar_entrada_arquivo("deletar", "tmp")
         self.assertTrue(sucesso)
         
         # 3. Tenta ler (deve retornar None pois ler_entrada ignora 0x01)

@@ -151,7 +151,7 @@ class root_dir_manager:
                     return posicao_atual
             return None
 
-    def desalocar_entrada_arquivo(self, nome_arquivo):
+    def desalocar_entrada_arquivo(self, nome_arquivo : str, extensao_arquivo : str):
         """
         Realiza a exclusão lógica de um arquivo marcando o atributo como 0x01.
         
@@ -161,6 +161,9 @@ class root_dir_manager:
         offset_root_dir = self.file_sys_manager.get_offset("root_dir")
         caminho_particao = self.file_sys_manager.get_endereco_particao()
         num_entradas = self.file_sys_manager.get_num_entradas_raiz()
+
+        nome_arquivo = nome_arquivo.lower()
+        extensao_arquivo = extensao_arquivo.lower()
 
         with open(caminho_particao, "r+b") as file:
             file.seek(offset_root_dir)
@@ -173,8 +176,9 @@ class root_dir_manager:
                     continue
 
                 nome = entrada[1:9].decode('utf-8').strip().lower()
+                extensao = entrada[9:12].decode('utf-8').strip().lower()
 
-                if nome_arquivo == nome:
+                if nome_arquivo == nome and extensao_arquivo == extensao:
                     file.seek(posicao_inicial)
                     # 0x01 marca a entrada como "excluída", permitindo reutilização
                     file.write((0x01).to_bytes(1, 'little'))

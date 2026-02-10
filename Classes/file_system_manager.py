@@ -278,7 +278,7 @@ class FileSystemManager:
         primeiro_cluster = entrada[6]
 
         self.fat_manager.desalocar_arquivo(primeiro_cluster) 
-        self.root_dir_manager.desalocar_entrada_arquivo(nome_arquivo) 
+        self.root_dir_manager.desalocar_entrada_arquivo(nome_arquivo, extensao_arquivo) 
         self.fat_manager.sincronizar_fat_1_2()
 
         return [f"arquivo {arquivo_str} excluido"]
