@@ -3,7 +3,38 @@
 ## 1. Visão Geral
 O sistema FAT48 é um gerenciador de arquivos baseado na tabela de alocação FAT32, operando sobre dispositivos de armazenamento físico (pendrives). O sistema utiliza alocação encadeada e mantém metadados em um diretório raiz.
 
+Alunos: 
+
+- André Gustavo Franco
+- Matheus Barros
+- Rafael dos Santos
+
 **Nota Importante:** O sistema não possui persistência de montagem entre execuções. É necessário formatar o dispositivo a cada nova inicialização do programa.
+
+## Como Executar
+**Importante: Caminho do Dispositivo**
+
+A formatação direta via caminho físico (ex: /dev/sdb1) pode falhar dependendo das permissões do sistema operacional ou do hardware. Ainda sim, é possível rodar o sistema de arquivos em um sistema binário qualquer. Você pode criar um arquivo binário dentro desse repositório seguindo os passos:
+
+1. Script gerador de arquivos binarios: 
+
+Dentro da pasta Formatador, há um ```arquivo criar_disco_mock.py``` que gera arquivos .bin. Abra o arquivo e altere os parametros da chamada do método dele no final do arquivo:
+
+2. Crie o arquivo binario com o comando:
+
+```Bash
+python3 Formatador/criar_disco_mock.py
+```
+
+Isso gerará um arquivo ```disco_virtual.bin```.
+
+3. Executar o programa
+
+```Bash
+sudo python3 main.py
+```
+
+Ao executar o programa, passe o caminho completo do arquivo binario criado (ou apenas o nome se estiver no mesmo diretorio) como argumento no comando de formatação.
 
 ---
 
